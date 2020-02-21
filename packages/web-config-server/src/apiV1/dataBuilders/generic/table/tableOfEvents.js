@@ -4,6 +4,7 @@
  */
 
 import groupBy from 'lodash.groupby';
+import keyBy from 'lodash.keyby';
 import pick from 'lodash.pick';
 
 import { getSortByKey, utcMoment, reduceToDictionary, stripFromStart } from '@tupaia/utils';
@@ -14,7 +15,6 @@ import {
   isMetadataKey,
   metadataKeysToDataElementMap,
 } from '/apiV1/dataBuilders/helpers';
-import { getDataElementsFromCodes } from '/apiV1/utils';
 
 const DATE_FORMAT = 'DD-MM-YYYY';
 const TOTAL_KEY = 'Total';
@@ -34,15 +34,13 @@ class TableOfEventsBuilder extends DataBuilder {
     };
   }
 
-  /**
-   * @returns {Promise<{ metadata: Array, dataElement: Array }>}
-   */
   async fetchDataSources() {
     const { dataElement: dataElementKeys, metadata: metadataKeys } = this.getKeysBySourceType();
-    const dataElements = await getDataElementsFromCodes(this.dhisApi, dataElementKeys, true);
-    const metadata = metadataKeysToDataElementMap(metadataKeys);
+    const dataElements = await this.fetchDataElements(dataElementKeys);
+    const codeToDataElement = keyBy(dataElements, 'code');
+    const metadataKeyToDataElement = metadataKeysToDataElementMap(metadataKeys);
 
-    return { ...dataElements, ...metadata };
+    return { ...codeToDataElement, ...metadataKeyToDataElement };
   }
 
   getKeysBySourceType() {
@@ -56,9 +54,8 @@ class TableOfEventsBuilder extends DataBuilder {
 
   async fetchEvents() {
     const { organisationUnitCode, trackedEntityInstance } = this.query;
-    const events = await this.getEvents({
+    const events = await super.fetchEvents({
       organisationUnitCode: trackedEntityInstance ? null : organisationUnitCode,
-      dataElementIdScheme: 'code',
       dataValueFormat: 'object',
     });
 
@@ -180,7 +177,7 @@ class TableOfEventsBuilder extends DataBuilder {
   }
 }
 
-export const tableOfEvents = async ({ dataBuilderConfig, query, entity }, dhisApi) => {
-  const builder = new TableOfEventsBuilder(dhisApi, dataBuilderConfig, query, entity);
+export const tableOfEvents = async ({ dataBuilderConfig, query, entity }, aggregator, dhisApi) => {
+  const builder = new TableOfEventsBuilder(aggregator, dhisApi, dataBuilderConfig, query, entity);
   return builder.build();
 };
