@@ -35,6 +35,7 @@ import {
   getMeasureDisplayInfo,
   calculateRadiusScaleFactor,
   MEASURE_TYPE_SHADING,
+  MEASURE_TYPE_SHADED_SPECTRUM,
 } from '../utils/measures';
 
 import { initialOrgUnit } from '../defaults';
@@ -293,7 +294,10 @@ export const selectHasPolygonMeasure = createSelector(
   (stateMeasureInfo = {}) => {
     return (
       stateMeasureInfo.measureOptions &&
-      stateMeasureInfo.measureOptions.some(option => option.type === MEASURE_TYPE_SHADING)
+      stateMeasureInfo.measureOptions.some(
+        option =>
+          option.type === MEASURE_TYPE_SHADING || option.type === MEASURE_TYPE_SHADED_SPECTRUM,
+      )
     );
   },
 );
