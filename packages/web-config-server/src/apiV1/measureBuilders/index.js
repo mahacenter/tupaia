@@ -5,3 +5,4 @@ export { groupEventsPerOrgUnit } from './groupEventsPerOrgUnit';
 export { mostRecentValueFromChildren } from './mostRecentValueFromChildren';
 export { sumLatestPerOrgUnit } from './sumPerOrgUnit';
 export { valueForOrgGroup } from './valueForOrgGroup';
+export { functionalPipeline } from './functionalPipeline';

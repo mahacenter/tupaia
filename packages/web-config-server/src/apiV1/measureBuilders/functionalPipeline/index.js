@@ -1,0 +1,1 @@
+export { functionalPipeline } from './functionalPipeline';
