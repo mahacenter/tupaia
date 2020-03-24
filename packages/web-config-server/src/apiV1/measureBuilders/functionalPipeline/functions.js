@@ -3,6 +3,24 @@
  * Copyright (c) 2020 Beyond Essential Systems Pty Ltd
  */
 
+/**
+ * Map a given dataElement to a different name for each orgUnit
+ *
+ * eg:
+ *
+ * results = [
+ *  { organisationUnit: 'AU_SA', dataElement: 'dailySurvey003', value: 7 },
+ *  { organisationUnit: 'AU_SA', dataElement: 'dailySurvey004', value: 4 },
+ *  { organisationUnit: 'AU_VIC', dataElement: 'dailySurvey003', value: 9 },
+ * ];
+ *
+ * select(results, 'dailySurvey003', 'value')
+ *  => [
+ *  { organisationUnit: 'AU_SA', dataElement: 'value', value: 7 },
+ *  { organisationUnit: 'AU_SA', dataElement: 'dailySurvey004', value: 4 },
+ *  { organisationUnit: 'AU_VIC', dataElement: 'value', value: 9 },
+ * ]
+ */
 const select = (results, selectionCode, as = selectionCode) => {
   return results.reduce((selectedResults, item) => {
     if (item.dataElement !== selectionCode) {
@@ -15,6 +33,23 @@ const select = (results, selectionCode, as = selectionCode) => {
   }, []);
 };
 
+/**
+ * Subtract a given dataElement from another for each orgUnit (removes the subtracted dataElement from the results)
+ *
+ * eg:
+ *
+ * results = [
+ *  { organisationUnit: 'AU_SA', dataElement: 'dailySurvey003', value: 7 },
+ *  { organisationUnit: 'AU_SA', dataElement: 'dailySurvey004', value: 4 },
+ *  { organisationUnit: 'AU_VIC', dataElement: 'dailySurvey003', value: 9 },
+ * ];
+ *
+ * select(results, 'dailySurvey003', 'dailySurvey004')
+ *  => [
+ *  { organisationUnit: 'AU_SA', dataElement: 'dailySurvey003', value: 3 },
+ *  { organisationUnit: 'AU_VIC', dataElement: 'value', value: 9 },
+ * ]
+ */
 const subtract = (results, totalCode, subtractorCode) => {
   return results.reduce(
     (substractedResults, item) => {

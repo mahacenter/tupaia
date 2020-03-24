@@ -26,8 +26,6 @@ class FunctionalPipelineMeasureBuilder extends DataBuilder {
       results = [];
     }
 
-    console.log(results);
-    // annotate each facility with the corresponding data from dhis
     return this.processPipeline(results);
   }
 
