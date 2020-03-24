@@ -27,7 +27,6 @@ import {
   CLOSE_MAP_POPUP,
   HIDE_MAP_MEASURE,
   UNHIDE_MAP_MEASURE,
-  ADD_MAP_REGIONS,
 } from '../actions';
 import { getMeasureFromHierarchy } from '../utils/getMeasureFromHierarchy';
 import { MARKER_TYPES } from '../containers/Map/MarkerLayer';
@@ -256,18 +255,6 @@ function tileSet(state, action) {
   }
 }
 
-function regions(state = {}, action) {
-  switch (action.type) {
-    case ADD_MAP_REGIONS:
-      return {
-        ...state,
-        ...action.regionData,
-      };
-    default:
-      return state;
-  }
-}
-
 export default combineReducers({
   position,
   innerAreas,
@@ -278,7 +265,6 @@ export default combineReducers({
   popup,
   shouldSnapToPosition,
   isMeasureLoading,
-  regions,
 });
 
 // Public selectors
