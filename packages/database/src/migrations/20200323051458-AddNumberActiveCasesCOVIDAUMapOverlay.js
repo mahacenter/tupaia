@@ -61,7 +61,7 @@ exports.up = function(db) {
 exports.down = function(db) {
   return db.runSql(
     `	
-    DELETE FROM "mapOverlay" WHERE "id" = 'STRIVE_FIS_Village_Number_Reported_Cases_In_Week';	
+    DELETE FROM "mapOverlay" WHERE "id" = 'COVID_AU_State_Number_Active_Cases';	
   `,
   );
 };
