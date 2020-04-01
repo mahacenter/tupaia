@@ -11,10 +11,13 @@ import { InputField } from './InputField';
 const DEFAULT_FIELD_TYPE = 'textarea';
 
 export class JsonInputField extends PureComponent {
-  onFieldValueChange(fieldName, fieldValue) {
+  onFieldValueChange(fieldName, fieldValue, csv) {
     const { onChange } = this.props;
+
+    const updatedFieldValue = csv ? fieldValue.split(',').map(value => value.trim()) : fieldValue;
+
     const jsonFieldValues = this.getJsonFieldValues();
-    onChange({ ...jsonFieldValues, [fieldName]: fieldValue });
+    onChange({ ...jsonFieldValues, [fieldName]: updatedFieldValue });
   }
 
   getJsonFieldValues() {
@@ -33,24 +36,42 @@ export class JsonInputField extends PureComponent {
     return {};
   }
 
+  getJsonFieldValue(fieldName, defaultValue) {
+    const jsonFieldValues = this.getJsonFieldValues();
+    const value = jsonFieldValues[fieldName];
+    const useDefaultValue =
+      (typeof value === 'undefined' || (typeof value === 'string' && value.trim() !== '')) &&
+      defaultValue !== '';
+
+    return useDefaultValue ? defaultValue : value;
+  }
+
   render() {
     const { value, getJsonFieldSchema, disabled } = this.props;
 
     const jsonFieldSchema = getJsonFieldSchema(value, this.props);
-    const jsonFieldValues = this.getJsonFieldValues();
 
     return (
       <FormGroup>
         <Card>
           <CardBody>
             {jsonFieldSchema.map(
-              ({ label, fieldName, type = DEFAULT_FIELD_TYPE, ...inputFieldProps }) => (
+              ({
+                label,
+                fieldName,
+                type = DEFAULT_FIELD_TYPE,
+                csv,
+                defaultValue,
+                ...inputFieldProps
+              }) => (
                 <InputField
                   key={fieldName}
                   label={label}
-                  value={jsonFieldValues[fieldName]}
+                  value={this.getJsonFieldValue(fieldName, defaultValue)}
                   inputKey={fieldName}
-                  onChange={(inputKey, fieldValue) => this.onFieldValueChange(inputKey, fieldValue)}
+                  onChange={(inputKey, fieldValue) =>
+                    this.onFieldValueChange(inputKey, fieldValue, csv)
+                  }
                   disabled={disabled}
                   type={type}
                   {...inputFieldProps}
