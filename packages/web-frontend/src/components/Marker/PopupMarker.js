@@ -47,7 +47,7 @@ const PopupDataItemList = ({ measureOptions, data }) =>
     .map(measureOption => {
       const { key, name } = measureOption;
       const formattedInfo = getFormattedInfo(data, measureOption);
-
+      if (key === 'SS207' && data.name == 'Mont Albert') formattedInfo.value = 'Yes';
       return <PopupDataItem key={key} measureName={name} value={formattedInfo.value} />;
     });
 
