@@ -26,6 +26,9 @@ exports.up = function(db) {
         AND "organisationUnitCode" = 'DL'
         AND "userGroup" <> 'Public'
         AND name <> 'General';
+    DELETE FROM "dashboardGroup" 
+      WHERE "organisationUnitCode" = 'World';
+
     UPDATE "dashboardGroup" 
       SET "dashboardReports" = '{18}'
       WHERE "organisationLevel" = 'Facility' 
