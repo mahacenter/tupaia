@@ -21,9 +21,24 @@ exports.up = function(db) {
       "organisationLevel" in ('Country', 'District', 'SubDistrict')
       AND "organisationUnitCode" = 'DL' 
       AND name <> 'General';
+    DELETE FROM "dashboardGroup" 
+      WHERE "organisationLevel" = 'Facility' 
+        AND "organisationUnitCode" = 'DL'
+        AND "userGroup" <> 'Public'
+        AND name <> 'General';
+    UPDATE "dashboardGroup" 
+      SET "dashboardReports" = '{18}'
+      WHERE "organisationLevel" = 'Facility' 
+        AND "organisationUnitCode" = 'DL';
+  UPDATE "dashboardReport" 
+    SET "dataBuilderConfig" = '{"labels": {"DP9": "Inpatient beds", "SS190A": "Blood Transfusions"}, "dataElementCodes": ["SS128", "SS182", "SS190A", "SS192", "SS219", "DP9"]}'
+    WHERE "id" = '18';
     DELETE FROM "mapOverlay" WHERE 
       'DL' = ANY("countryCodes")
-      AND NOT(id IN ('171', '157');
+      AND NOT(id IN ('171', '157'));
+    UPDATE entity
+      SET bounds = (SELECT bounds FROM entity WHERE name = 'Demo Land')
+        WHERE name = 'World';
     UPDATE "dashboardGroup"
       SET "dashboardReports" = '{23,26}'
         WHERE "organisationUnitCode" = 'DL' 
