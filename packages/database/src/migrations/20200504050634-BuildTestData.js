@@ -30,7 +30,7 @@ exports.up = function(db) {
       WHERE "organisationUnitCode" = 'World';
 
     UPDATE "dashboardGroup" 
-      SET "dashboardReports" = '{18}'
+      SET "dashboardReports" = '{18,9}'
       WHERE "organisationLevel" = 'Facility' 
         AND "organisationUnitCode" = 'DL';
   UPDATE "dashboardReport" 
@@ -43,7 +43,7 @@ exports.up = function(db) {
       SET bounds = (SELECT bounds FROM entity WHERE name = 'Demo Land')
         WHERE name = 'World';
     UPDATE "dashboardGroup"
-      SET "dashboardReports" = '{23,26}'
+      SET "dashboardReports" = '{23,26,13}'
         WHERE "organisationUnitCode" = 'DL' 
           AND name = 'General'
           AND "userGroup" = 'Public'

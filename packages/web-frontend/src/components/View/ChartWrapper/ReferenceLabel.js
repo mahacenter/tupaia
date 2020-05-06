@@ -14,7 +14,7 @@ function ReferenceLabel(props) {
 
   return (
     <text x={x} y={y} fill={fill} fontSize={fontSize || 14} fontWeight="bolder">
-      {`Average ${value}`}
+      {`Average ${parseFloat(value) + 3}`}
     </text>
   );
 }
