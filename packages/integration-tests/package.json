@@ -29,8 +29,12 @@
     "lodash.keyby": "^4.6.0",
     "mocha": "^6.2.0",
     "moment": "^2.24.0",
+    "node-fetch": "^1.7.3",
     "nyc": "^14.1.1",
     "prettier": "^1.17.1",
     "sinon": "^7.3.2"
+  },
+  "dependencies": {
+    "fetch-mock": "^9.9.0"
   }
 }

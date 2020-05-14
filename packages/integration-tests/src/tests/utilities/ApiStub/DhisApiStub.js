@@ -3,7 +3,7 @@
  * Copyright (c) 2017 - 2020 Beyond Essential Systems Pty Ltd
  */
 
-import { keyBy } from 'lodash.keyby';
+import keyBy from 'lodash.keyby';
 
 import { ApiStub } from './ApiStub';
 
@@ -83,6 +83,8 @@ const RESOURCES = {
 // TODO add dataValue Example
 
 export class DhisApiStub extends ApiStub {
+  static API_URL = 'https://dev-aggregation.tupaia.org/api';
+
   data;
 
   constructor(data = {}) {
@@ -96,12 +98,11 @@ export class DhisApiStub extends ApiStub {
    * Simulates a DHIS data repository. The structure used is not an accurate representation of an
    * actual DHIS database, but rather one which is convenient for the purposes of this class
    */
-  parseData = data => {
-    RESOURCES.reduce(
+  parseData = data =>
+    Object.values(RESOURCES).reduce(
       (parsedData, resourceKey) => ({ ...parsedData, [resourceKey]: data[resourceKey] || [] }),
       {},
     );
-  };
 
   /**
    * Builds data maps for optimised resource searching
@@ -118,10 +119,17 @@ export class DhisApiStub extends ApiStub {
     };
   };
 
+  // eslint-disable-next-line class-methods-use-this
+  getApiUrl() {
+    return DhisApiStub.API_URL;
+  }
+
   // TODO break query params
   getHandlers() {
     return {
-      'analytics/rawData.json': this.handleRawAnalytics, // TODO bind this?
+      'analytics/rawData.json': {
+        get: this.getRawAnalytics, // TODO bind this?
+      },
     };
   }
 
@@ -144,7 +152,9 @@ export class DhisApiStub extends ApiStub {
     return dimensions;
   };
 
-  handleRawAnalytics(query) {
+  getRawAnalytics(query) {
+    // TODO only with `get` method
+
     const { requestedDimensions } = this.parseDimensionParam(query);
 
     return {

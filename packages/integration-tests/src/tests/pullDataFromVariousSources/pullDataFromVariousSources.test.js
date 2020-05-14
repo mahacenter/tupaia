@@ -20,9 +20,17 @@ describe('Pull data from various sources', () => {
     // Object.values(testContexts).forEach(testContext => {
     testContexts.dhisData,
   ].forEach(testContext => {
-    before(async () => {
-      await testContext.setup();
-    });
+    if (testContext.setup) {
+      before(async () => {
+        await testContext.setup();
+      });
+    }
+
+    if (testContext.tearDown) {
+      after(async () => {
+        await testContext.tearDown();
+      });
+    }
 
     describe(testContext.description, () => {
       describe('analytics', () => {

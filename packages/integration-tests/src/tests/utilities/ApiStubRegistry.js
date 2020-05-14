@@ -3,29 +3,37 @@
  * Copyright (c) 2017 - 2020 Beyond Essential Systems Pty Ltd
  */
 
-import sinon from 'sinon';
+import fetchMock from 'fetch-mock';
 
 export class ApiStubRegistry {
   handlers = {};
 
   add(apiStub) {
+    const apiUrl = apiStub.getApiUrl().replace(/\/$/, '');
+
     Object.entries(apiStub.getHandlers()).forEach(([resource, handler]) => {
-      if (this.handlers[resource]) {
-        // TODO also use base url
-        throw new Error(`${resource} has already been added!`);
+      const url = `${apiUrl}/${resource}`;
+      if (this.handlers[url]) {
+        throw new Error(`A handler for ${url} has already been added!`);
       }
 
-      this.handlers[resource] = handler;
+      this.handlers[url] = handler;
     });
 
     return this;
   }
 
-  /**
-   * Returns a stub that can replace the `fetch` method
-   * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
-   */
-  getSinonFetchStub() {
-    return sinon.stub().callsFake((resource, query) => this.handlers[resource](query));
+  fetch(url, query) {
+    console.log('fetch');
+    const { method } = query;
+    return this.handlers[url][method.toLowerCase()](query);
   }
+
+  // mockFetch() {
+  //   Object.entries(handlers).forEach(([url, handler]) => {
+  //     fetchMock.mock(url, handler());
+  //   });
+  // }
+
+  // restoreFetch() {}
 }
