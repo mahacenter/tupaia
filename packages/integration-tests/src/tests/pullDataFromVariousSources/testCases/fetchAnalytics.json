@@ -1,0 +1,62 @@
+[
+  {
+    "description": "analytics for single data element",
+    "input": ["TEST_BCD1", {}],
+    "output": {
+      "results": [
+        {
+          "organisationUnit": "Test_TO",
+          "period": "20191210",
+          "dataElement": "BCD1",
+          "value": 0
+        },
+        {
+          "organisationUnit": "Test_TO_Tongatapu",
+          "period": "201200905",
+          "dataElement": "BCD1",
+          "value": 2
+        }
+      ],
+      "metadata": {
+        "dataElementCodeToName": { "TEST_BCD1": "How many doctors work at the facility?" }
+      },
+      "period": {}
+    }
+  },
+  {
+    "description": "analytics for multiple data elements",
+    "input": [["TEST_BCD1", "TEST_BCD2", {}]],
+    "output": {
+      "results": [
+        {
+          "organisationUnit": "Test_TO",
+          "period": "20191210",
+          "dataElement": "BCD1",
+          "value": 0
+        },
+        {
+          "organisationUnit": "Test_TO",
+          "period": "20191210",
+          "dataElement": "BCD2",
+          "value": 1
+        },
+        {
+          "organisationUnit": "Test_TO_Tongatapu",
+          "period": "201200905",
+          "dataElement": "BCD1",
+          "value": 2
+        },
+        {
+          "organisationUnit": "Test_TO_Tongatapu",
+          "period": "201200905",
+          "dataElement": "BCD2",
+          "value": 3
+        }
+      ],
+      "metadata": {
+        "dataElementCodeToName": { "TEST_BCD1": "How many doctors work at the facility?" }
+      },
+      "period": {}
+    }
+  }
+]

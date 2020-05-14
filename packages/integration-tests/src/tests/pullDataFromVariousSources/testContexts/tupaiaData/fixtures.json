@@ -1,0 +1,50 @@
+{
+  "entities": [
+    {
+      "code": "Test_TO",
+      "parentCode": "World",
+      "name": "Tonga",
+      "type": "country"
+    },
+    {
+      "code": "Test_TO_Tongatapu",
+      "parentCode": "Test_TO",
+      "name": "Tongatapu",
+      "type": "district"
+    }
+  ],
+  "survey": {
+    "name": "Test Basic Clinic Data",
+    "code": "TEST_BCD",
+    "questions": [
+      {
+        "code": "TEST_BCD1",
+        "text": "How many doctors work at the facility?",
+        "type": "Number"
+      },
+      {
+        "code": "TEST_BCD2",
+        "text": "How many more staff houses are required??",
+        "type": "Number"
+      }
+    ],
+    "responses": [
+      {
+        "submission_time": "2019-12-10 12:00:00",
+        "entityCode": "Test_TO",
+        "answers": {
+          "TEST_BCD1": 0,
+          "TEST_BCD2": 1
+        }
+      },
+      {
+        "submission_time": "2020-09-05 13:00:00",
+        "entityCode": "Test_TO_Tongatapu",
+        "answers": {
+          "TEST_BCD1": 2,
+          "TEST_BCD2": 3
+        }
+      }
+    ]
+  }
+}
