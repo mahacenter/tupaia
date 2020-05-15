@@ -104,11 +104,15 @@ export class DhisFetcher {
     if (cachedResponse) {
       return cachedResponse;
     }
+    // console.log({ url });
+    // console.log({ url, fetchConfig });
     const response = await fetchWithTimeout(url, fetchConfig, MAX_FETCH_WAIT_TIME);
+    // console.log({ response });
 
     if (response.ok) {
       try {
         const responseObject = await response.json();
+        console.log({ responseObject });
         if (getIsCacheable(baseEndpoint, httpMethod)) {
           // if no recordId was provided, matching records are stored under responseObject[endpoint]
           // if recordId was provided, the structure is less predictable, but it would have 404'd if

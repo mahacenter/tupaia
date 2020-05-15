@@ -33,6 +33,10 @@
       "path": "packages/export-chart-lambda"
     },
     {
+      "name": "integration-tests",
+      "path": "packages/integration-tests"
+    },
+    {
       "name": "meditrak-app",
       "path": "packages/meditrak-app"
     },

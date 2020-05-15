@@ -325,6 +325,11 @@ export class DhisApi {
       }),
     );
 
+    if (originalQuery.dataElementCodes && originalQuery.dataElementCodes.includes('BCD39')) {
+      console.log(headers);
+      console.log(rows);
+      console.log(metaData);
+    }
     return { headers, rows, metaData };
   }
 

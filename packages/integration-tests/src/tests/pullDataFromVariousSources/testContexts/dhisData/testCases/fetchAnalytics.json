@@ -1,0 +1,239 @@
+{
+  "singleDataElement": {
+    "only": true,
+    "httpRequestMocks": [
+      {
+        "endpoint": "analytics/rawData.json",
+        "queryParams": [
+          {
+            "inputIdScheme": "code",
+            "outputIdScheme": "code",
+            "includeMetadataDetails": true,
+            "dimension": [
+              "dx:BCD39;BCD41;BCD43;FF7;BCD46;BCD47;BCD48;BCD48a;BCD48b;BCD49;BCD50;BCD51;BCD52;BCD53;BCD54;BCD55",
+              "ou:TO_Nukuhc",
+              "co",
+              "pe:201701;201702;201703;201704;201705;201706;201707;201708;201709;201710;201711;201712;201801;201802;201803;201804;201805;201806;201807;201808;201809;201810;201811;201812;201901;201902;201903;201904;201905;201906;201907;201908;201909;201910;201911;201912;202001;202002;202003;202004;202005"
+            ]
+          }
+        ],
+        "response": {
+          "rows": [
+            [
+              "TEST_BCD1",
+              "HllvX50cXC0",
+              "Test_TO",
+              "20170627",
+              "2019-12-10 12:00:00.0",
+              "2019-12-10 12:00:00.0",
+              "0.0"
+            ],
+            [
+              "TEST_BCD2",
+              "HllvX50cXC0",
+              "Test_TO",
+              "20170627",
+              "2017-06-27 00:00:00.0",
+              "2017-06-27 00:00:00.0",
+              "1.0"
+            ],
+            [
+              "TEST_BCD1",
+              "HllvX50cXC0",
+              "Test_TO_Tongatapu",
+              "20170627",
+              "2020-09-05 13:00:00.0",
+              "2020-09-05 13:00:00.0",
+              "2.0"
+            ],
+            [
+              "TEST_BCD2",
+              "HllvX50cXC0",
+              "Test_TO_Tongatapu",
+              "20170627",
+              "2020-09-05 13:00:00.0",
+              "2020-09-05 13:00:00.0",
+              "3.0"
+            ]
+          ],
+          "metaData": {
+            "items": {
+              "c7GFCnUwULz": {
+                "uid": "c7GFCnUwULz",
+                "code": "BCD47",
+                "name": "# of midwives",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "jxodPel43S3": {
+                "uid": "jxodPel43S3",
+                "code": "BCD46",
+                "name": "# of doctors",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "ou": {
+                "uid": "ou",
+                "name": "Organisation unit",
+                "dimensionType": "ORGANISATION_UNIT"
+              },
+              "Avu2pndRYcL": {
+                "uid": "Avu2pndRYcL",
+                "code": "BCD43",
+                "name": "Sunday opening time",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "oxksRFlN3KF": {
+                "uid": "oxksRFlN3KF",
+                "code": "FF7",
+                "name": "Facility Catchment Population",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "rQFvV7PnTEj": {
+                "uid": "rQFvV7PnTEj",
+                "code": "BCD48b",
+                "name": "# of registered nurses",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "co": {
+                "uid": "co",
+                "name": "Category option combo",
+                "dimensionType": "CATEGORY_OPTION_COMBO"
+              },
+              "AI5vQ3GFg5F": {
+                "uid": "AI5vQ3GFg5F",
+                "code": "TO_Nukuhc",
+                "name": "Nukunuku",
+                "description": "{\"otherInfo\":\"Type: 2\",\"level\":\"Facility\",\"photoUrl\":\"https://tupaia.s3-ap-southeast-2.amazonaws.com/uploads/images/1498547512341_387730.png\"}",
+                "dimensionItemType": "ORGANISATION_UNIT",
+                "valueType": "NUMBER",
+                "totalAggregationType": "SUM"
+              },
+              "pO9cZlE1nEe": {
+                "uid": "pO9cZlE1nEe",
+                "code": "BCD50",
+                "name": "# of pharmacy",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "EeZceL2nCDA": {
+                "uid": "EeZceL2nCDA",
+                "code": "BCD53",
+                "name": "How many other trained health staff work at the facility (e.g. Public Health Officers, Physios)",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "c5BzxQvshMB": {
+                "uid": "c5BzxQvshMB",
+                "code": "BCD51",
+                "name": "How many pharmacists work at the facility?",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "ZOw0gVBN6Pq": {
+                "uid": "ZOw0gVBN6Pq",
+                "code": "BCD54",
+                "name": "How many volunteers work at the facility?",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "mkBl6ZBuNOA": {
+                "uid": "mkBl6ZBuNOA",
+                "code": "BCD39",
+                "name": "Weekday opening time",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "Y6TDopFF0O0": {
+                "uid": "Y6TDopFF0O0",
+                "code": "BCD55",
+                "name": "How many auxilary staff work at the facility (cleaners, full-time security, admin)",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "dx": { "uid": "dx", "name": "Data", "dimensionType": "DATA_X" },
+              "pe": { "uid": "pe", "dimensionType": "PERIOD" },
+              "HllvX50cXC0": {
+                "uid": "HllvX50cXC0",
+                "code": "default",
+                "name": "default",
+                "valueType": "NUMBER",
+                "totalAggregationType": "SUM"
+              },
+              "H50hUe6UrlH": {
+                "uid": "H50hUe6UrlH",
+                "code": "BCD41",
+                "name": "Saturday opening time",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "VCLujRxNl0K": {
+                "uid": "VCLujRxNl0K",
+                "code": "BCD48",
+                "name": "# of nurses",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "F1GGoKauK4C": {
+                "uid": "F1GGoKauK4C",
+                "code": "BCD49",
+                "name": "# of nurse aides",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "dpmssP0iCNk": {
+                "uid": "dpmssP0iCNk",
+                "code": "BCD48a",
+                "name": "# of nurse practitioners",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              },
+              "PWTPDGiVnCH": {
+                "uid": "PWTPDGiVnCH",
+                "code": "BCD52",
+                "name": "How many microscopists work at the facility?",
+                "dimensionItemType": "DATA_ELEMENT",
+                "valueType": "NUMBER",
+                "aggregationType": "AVERAGE",
+                "totalAggregationType": "SUM"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
