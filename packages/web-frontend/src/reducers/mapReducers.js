@@ -6,12 +6,8 @@
  */
 
 import { combineReducers } from 'redux';
-import { createSelector } from 'reselect';
-import createCachedSelector from 're-reselect';
-import { cachedSelectOrgUnitAndDescendants } from './orgUnitReducers';
 
 import {
-  GO_HOME,
   CHANGE_MEASURE,
   CHANGE_ORG_UNIT,
   CHANGE_POSITION,
@@ -27,23 +23,16 @@ import {
   CLOSE_MAP_POPUP,
   HIDE_MAP_MEASURE,
   UNHIDE_MAP_MEASURE,
-  ADD_MAP_REGIONS,
+  CLEAR_MEASURE,
 } from '../actions';
-import { getMeasureFromHierarchy } from '../utils/getMeasureFromHierarchy';
-import { MARKER_TYPES } from '../containers/Map/MarkerLayer';
-import { getMeasureDisplayInfo, calculateRadiusScaleFactor } from '../utils/measures';
 
+import { MARKER_TYPES } from '../constants';
 import { initialOrgUnit } from '../defaults';
 
 const defaultBounds = initialOrgUnit.location.bounds;
 
 function position(state = { bounds: defaultBounds }, action) {
   switch (action.type) {
-    case GO_HOME: {
-      return { bounds: defaultBounds };
-    }
-
-    case CHANGE_ORG_UNIT:
     case CHANGE_ORG_UNIT_SUCCESS: {
       if (action.shouldChangeMapBounds) {
         const { location } = action.organisationUnit;
@@ -84,35 +73,10 @@ function position(state = { bounds: defaultBounds }, action) {
   }
 }
 
-function innerAreas(state = [], action) {
-  switch (action.type) {
-    case CHANGE_ORG_UNIT: {
-      return [];
-    }
-    case CHANGE_ORG_UNIT_SUCCESS: {
-      const { organisationUnit } = action;
-      const { organisationUnitChildren } = organisationUnit;
-      if (organisationUnitChildren && organisationUnitChildren.length > 0) {
-        return organisationUnitChildren;
-      }
-      return state;
-    }
-    default: {
-      return state;
-    }
-  }
-}
-
 function measureInfo(state = {}, action) {
   switch (action.type) {
-    case CHANGE_ORG_UNIT:
-      if (action.organisationUnit.organisationUnitCode === 'World') {
-        // clear measures when returning to world view
-        return {};
-      }
-      return state;
-    case CHANGE_MEASURE:
-      return state;
+    case CLEAR_MEASURE:
+      return {};
     case FETCH_MEASURE_DATA_SUCCESS: {
       const currentCountry = action.countryCode;
       // remove measure units with no coordinates
@@ -128,7 +92,10 @@ function measureInfo(state = {}, action) {
 
       return {
         ...action.response,
+        //Combine default hiddenMeasures (action.response.hiddenMeasures) and hiddenMeasures in the state so that default hiddenMeasures are populated
+        //If hiddenMeasures in the state has the same value, override the default hiddenMeasures.
         hiddenMeasures: {
+          ...action.response.hiddenMeasures,
           ...state.hiddenMeasures,
         },
         currentCountry,
@@ -166,16 +133,6 @@ function isMeasureLoading(state = false, action) {
     case FETCH_MEASURE_DATA_SUCCESS:
     case CANCEL_FETCH_MEASURE_DATA:
       return false;
-    default:
-      return state;
-  }
-}
-
-function focussedOrganisationUnit(state = {}, action) {
-  switch (action.type) {
-    case CHANGE_ORG_UNIT:
-      return action.organisationUnit;
-
     default:
       return state;
   }
@@ -251,80 +208,12 @@ function tileSet(state, action) {
   }
 }
 
-function regions(state = {}, action) {
-  switch (action.type) {
-    case ADD_MAP_REGIONS:
-      return {
-        ...state,
-        ...action.regionData,
-      };
-    default:
-      return state;
-  }
-}
-
 export default combineReducers({
   position,
-  innerAreas,
   measureInfo,
   tileSet,
-  focussedOrganisationUnit,
   isAnimating,
   popup,
   shouldSnapToPosition,
   isMeasureLoading,
-  regions,
 });
-
-// Public selectors
-
-export function selectMeasureName(state = {}) {
-  const { measureHierarchy, selectedMeasureId } = state.measureBar;
-  const selectedMeasure = getMeasureFromHierarchy(measureHierarchy, selectedMeasureId);
-  return selectedMeasure ? selectedMeasure.name : '';
-}
-
-const selectMeasureDataByCode = createSelector(
-  [state => state.map.measureInfo.measureData, (_, code) => code],
-  (data, code) => data.find(val => val.organisationUnitCode === code),
-);
-
-const cachedSelectMeasureWithDisplayInfo = createCachedSelector(
-  [
-    (_, organisationUnitCode) => organisationUnitCode,
-    selectMeasureDataByCode,
-    state => state.map.measureInfo.measureOptions,
-    state => state.map.measureInfo.hiddenMeasures,
-  ],
-  (organisationUnitCode, data, options, hiddenMeasures) => {
-    return {
-      organisationUnitCode,
-      ...data,
-      ...getMeasureDisplayInfo({ ...data }, options, hiddenMeasures),
-    };
-  },
-)((_, orgUnitCode) => orgUnitCode);
-
-export const selectAllMeasuresWithDisplayInfo = createSelector(
-  [state => state, state => state.map.measureInfo],
-  (state, measureInfoParam) => {
-    const { measureData, currentCountry, measureLevel } = measureInfoParam;
-    if (!measureLevel || !currentCountry || !measureData) {
-      return [];
-    }
-
-    const listOfMeasureLevels = measureLevel.split(',');
-    const allOrgUnits = cachedSelectOrgUnitAndDescendants(state, currentCountry).filter(orgUnit =>
-      listOfMeasureLevels.includes(orgUnit.type),
-    );
-
-    return allOrgUnits.map(orgUnit =>
-      cachedSelectMeasureWithDisplayInfo(state, orgUnit.organisationUnitCode),
-    );
-  },
-);
-
-export const selectRadiusScaleFactor = createSelector(
-  [selectAllMeasuresWithDisplayInfo],
-  calculateRadiusScaleFactor,
-);

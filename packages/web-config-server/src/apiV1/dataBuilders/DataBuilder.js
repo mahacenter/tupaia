@@ -4,6 +4,7 @@
  */
 import { getSortByKey } from '@tupaia/utils';
 
+import { Project } from '/models';
 import { NO_DATA_AVAILABLE } from '/apiV1/dataBuilders/constants';
 
 export class DataBuilder {
@@ -41,25 +42,36 @@ export class DataBuilder {
     );
   }
 
-  async fetchAnalytics(dataElementCodes, additionalQueryConfig) {
-    const { dataServices } = this.config;
+  async fetchAnalytics(
+    dataElementCodes,
+    additionalQueryConfig,
+    aggregationType = this.aggregationType,
+    aggregationConfig = {},
+  ) {
+    const { dataServices, dataSourceEntityType, dataSourceEntityFilter, filter = {} } = this.config;
     const fetchOptions = {
       programCodes: this.getProgramCodesForAnalytics(),
       dataServices,
+      dataSourceEntityType,
+      dataSourceEntityFilter,
       ...additionalQueryConfig,
     };
 
     return this.aggregator.fetchAnalytics(dataElementCodes, fetchOptions, this.query, {
-      aggregationType: this.aggregationType,
+      aggregationConfig,
+      aggregationType,
+      filter,
     });
   }
 
   async fetchEvents(additionalQueryConfig) {
-    const { programCode, dataServices } = this.config;
+    const { programCode, dataServices, dataSourceEntityType, dataSourceEntityFilter } = this.config;
     const { organisationUnitCode, startDate, endDate, trackedEntityInstance, eventId } = this.query;
 
     return this.aggregator.fetchEvents(programCode, {
       dataServices,
+      dataSourceEntityType,
+      dataSourceEntityFilter,
       organisationUnitCode,
       startDate,
       endDate,
@@ -78,6 +90,17 @@ export class DataBuilder {
       dataServices,
       includeOptions: true,
     });
+  }
+
+  async fetchEntityHierarchyId() {
+    const { projectCode } = this.query;
+    const project = await Project.findOne({ code: projectCode });
+    return project.entity_hierarchy_id;
+  }
+
+  async fetchDescendantsOfType(type) {
+    const entityHierarchyId = await this.fetchEntityHierarchyId();
+    return this.entity.getDescendantsOfType(type, entityHierarchyId);
   }
 
   sortDataByName = data => data.sort(getSortByKey('name'));

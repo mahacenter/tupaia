@@ -19,8 +19,6 @@ import { RequestCountryAccessForm } from '../../RequestCountryAccessForm';
 import { TopBar } from './TopBar';
 import { delayMobileTapCallback } from '../../../utils';
 import {
-  goHome,
-  changeOrgUnit,
   findLoggedIn,
   toggleSearchExpand,
   openUserPage,
@@ -37,7 +35,7 @@ const Container = styled.div`
   grid-auto-flow: row;
 `;
 
-const HeaderBar = props => {
+const HeaderBar = React.memo(props => {
   const {
     isUserLoggedIn,
     searchIsExpanded,
@@ -58,8 +56,8 @@ const HeaderBar = props => {
     if (!isRequestingLogin) props.onRefreshCurrentUser();
   }, []);
 
-  const handleOpenSignupOverlay = () => openSignupOverlay(true);
-  const handleCloseSignupOverlay = () => openSignupOverlay(false);
+  const handleOpenSignupOverlay = React.useCallback(() => openSignupOverlay(true), []);
+  const handleCloseSignupOverlay = React.useCallback(() => openSignupOverlay(false), []);
   const handleToggleUserMenuExpand = React.useCallback(() => toggleMenuExpanded(!isLoginExpanded), [
     isLoginExpanded,
   ]);
@@ -86,7 +84,7 @@ const HeaderBar = props => {
       {requestCountryAccessIsExpanded && <RequestCountryAccessForm />}
     </Container>
   );
-};
+});
 
 HeaderBar.propTypes = {
   searchIsExpanded: PropTypes.bool,
@@ -146,10 +144,6 @@ const mapDispatchToProps = dispatch => ({
   onToggleUserMenuExpand: () =>
     delayMobileTapCallback(() => dispatch(openUserPage(DIALOG_PAGE_USER_MENU))),
   onRefreshCurrentUser: () => dispatch(findLoggedIn()),
-  goHome: () => {
-    dispatch(goHome());
-    dispatch(changeOrgUnit());
-  },
   dispatch,
 });
 
@@ -163,8 +157,4 @@ const mergeProps = (
   ...ownProps,
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-  mergeProps,
-)(HeaderBar);
+export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(HeaderBar);

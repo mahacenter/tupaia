@@ -1,13 +1,16 @@
 import { MapOverlay } from '/models';
 import { QUERY_CONJUNCTIONS } from '@tupaia/database';
-import { DhisTranslationHandler } from './utils';
+import { RouteHandler } from './RouteHandler';
+import { PermissionsChecker } from './permissions';
 const { AND, RAW } = QUERY_CONJUNCTIONS;
 
-export default class extends DhisTranslationHandler {
-  buildData = async req => {
-    const { entity } = this;
+export default class extends RouteHandler {
+  static PermissionsChecker = PermissionsChecker;
+
+  buildResponse = async () => {
+    const { entity, query } = this;
     const { code: entityCode, name: entityName } = entity;
-    const userGroups = await req.getUserGroups(entityCode);
+    const userGroups = await this.req.getUserGroups(entityCode);
 
     // will return undefined if no country level ancestor organisationUnit (e.g. World)
     const { code: countryCode } = (await entity.getCountry()) || {};
@@ -23,6 +26,12 @@ export default class extends DhisTranslationHandler {
             sql: '"countryCodes" IS NULL OR :countryCode = ANY("countryCodes")',
             parameters: {
               countryCode,
+            },
+          },
+          [AND]: {
+            projectCodes: {
+              comparator: '@>',
+              comparisonValue: [query.projectCode],
             },
           },
         },
@@ -49,7 +58,7 @@ const translateOverlaysForResponse = mapOverlays => {
         groupedOverlays[groupName] = [];
       }
 
-      const idString = [id, ...(linkedMeasures || [])].join(',');
+      const idString = [id, ...(linkedMeasures || [])].sort().join(',');
 
       groupedOverlays[groupName].push({
         measureId: idString,

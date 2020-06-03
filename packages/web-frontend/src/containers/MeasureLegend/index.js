@@ -20,6 +20,7 @@ import moment from 'moment';
 import { getMarkerForOption, resolveSpectrumColour, UNKNOWN_COLOR } from '../../components/Marker';
 import { BOX_SHADOW, TRANS_BLACK_LESS, OFF_WHITE, WHITE } from '../../styles';
 import NoDataLabel, { LabelLeft, LabelRight } from './labels';
+import { SCALE_TYPES } from '../../constants';
 import {
   MEASURE_TYPE_ICON,
   MEASURE_TYPE_RADIUS,
@@ -28,9 +29,8 @@ import {
   MEASURE_TYPE_COLOR,
   MEASURE_VALUE_OTHER,
   MEASURE_VALUE_NULL,
-  SCALE_TYPES,
+  MEASURE_TYPE_SHADED_SPECTRUM,
 } from '../../utils/measures';
-
 import { formatDataValue } from '../../utils/formatters';
 import {
   DEFAULT_ICON,
@@ -43,6 +43,12 @@ import {
   MeasureOptionsPropType,
   MeasureOptionsGroupPropType,
 } from '../../components/Marker/propTypes';
+
+const coloredMeasureTypes = [
+  MEASURE_TYPE_COLOR,
+  MEASURE_TYPE_SPECTRUM,
+  MEASURE_TYPE_SHADED_SPECTRUM,
+];
 
 const LegendOuterFrame = styled.div`
   width: 100%;
@@ -95,13 +101,21 @@ const getLabels = (scaleType, min, max, valueType) => {
   }
 };
 
-const SpectrumLegend = ({ scaleType, min, max, noDataColour, valueMapping, valueType }) => {
+const SpectrumLegend = ({
+  scaleType,
+  scaleColorScheme,
+  min,
+  max,
+  noDataColour,
+  valueMapping,
+  valueType,
+}) => {
   const spectrumDivs = [];
 
   switch (scaleType) {
     case SCALE_TYPES.TIME:
       for (let i = 0; i < 1; i += 0.01) {
-        const colour = resolveSpectrumColour(scaleType, i, min, max);
+        const colour = resolveSpectrumColour(scaleType, scaleColorScheme, i, min, max);
         spectrumDivs.push(<SpectrumSliver style={{ background: colour }} key={i} />);
       }
       break;
@@ -112,7 +126,7 @@ const SpectrumLegend = ({ scaleType, min, max, noDataColour, valueMapping, value
       const increment = (max - min) / 100;
 
       for (let i = min; i < max; i += increment) {
-        const colour = resolveSpectrumColour(scaleType, i, min, max);
+        const colour = resolveSpectrumColour(scaleType, scaleColorScheme, i, min, max);
         spectrumDivs.push(<SpectrumSliver style={{ background: colour }} key={i} />);
       }
     }
@@ -169,7 +183,7 @@ function isHiddenOtherIcon({ value, icon }) {
 }
 
 function getLegendColor(value, type, hasColorLayer) {
-  if (type === MEASURE_TYPE_COLOR || type === MEASURE_TYPE_SPECTRUM) {
+  if (coloredMeasureTypes.includes(type)) {
     // if this layer is providing color, of course show the color
     return value.color;
   } else if (hasColorLayer) {
@@ -216,6 +230,7 @@ const MeasureLegend = ({ measureOptions, hasIconLayer, hasRadiusLayer, hasColorL
     type,
     valueMapping,
     scaleType,
+    scaleColorScheme,
     noDataColour,
     key: dataKey,
     min,
@@ -223,10 +238,11 @@ const MeasureLegend = ({ measureOptions, hasIconLayer, hasRadiusLayer, hasColorL
     valueType,
   } = measureOptions;
 
-  if (type === MEASURE_TYPE_SPECTRUM) {
+  if (type === MEASURE_TYPE_SPECTRUM || type === MEASURE_TYPE_SHADED_SPECTRUM) {
     return (
       <SpectrumLegend
         scaleType={scaleType}
+        scaleColorScheme={scaleColorScheme}
         min={min}
         max={max}
         noDataColour={noDataColour}
@@ -243,7 +259,7 @@ const MeasureLegend = ({ measureOptions, hasIconLayer, hasRadiusLayer, hasColorL
   const keys = values
     .filter(v => !v.hideFromLegend)
     .filter(v => hasRadiusLayer || !isHiddenOtherIcon(v)) // only show hidden icons in legend if paired with radius
-    .filter(v => v.value !== MEASURE_VALUE_NULL) // we will be rendering this below
+    .filter(v => v.value !== MEASURE_VALUE_NULL && v.value !== null) // we will be rendering this below
     .map(v => {
       const marker = getLegendMarkerForValue(v, type, hasIconLayer, hasRadiusLayer, hasColorLayer);
       return (
@@ -257,15 +273,35 @@ const MeasureLegend = ({ measureOptions, hasIconLayer, hasRadiusLayer, hasColorL
       );
     });
 
+  //Sometimes we want to group Null + No = No.
+  //So we dont wan't to render 'No data' legend if that's the case
+  const hasGroupedLegendIncludingNull = values.some(({ value }) => {
+    if (Array.isArray(value)) {
+      return value.some(innerValue => innerValue === MEASURE_VALUE_NULL);
+    }
+
+    return false;
+  });
+
+  let nullKey = null;
   const nullItem = valueMapping.null;
-  const nullKey = nullItem ? (
-    <LegendEntry
-      marker={getLegendMarkerForValue(nullItem, type, hasIconLayer, hasRadiusLayer, hasColorLayer)}
-      label={nullItem.name}
-      dataKey={dataKey}
-      value={null}
-    />
-  ) : null;
+
+  if (!hasGroupedLegendIncludingNull && nullItem) {
+    nullKey = (
+      <LegendEntry
+        marker={getLegendMarkerForValue(
+          nullItem,
+          type,
+          hasIconLayer,
+          hasRadiusLayer,
+          hasColorLayer,
+        )}
+        label={nullItem.name}
+        dataKey={dataKey}
+        value={null}
+      />
+    );
+  }
 
   return (
     <LegendContainer>
@@ -287,9 +323,7 @@ const MultiLegend = ({ measureOptions, isMeasureLoading }) => {
 
   const hasIconLayer = measureOptions.some(l => l.type === MEASURE_TYPE_ICON);
   const hasRadiusLayer = measureOptions.some(l => l.type === MEASURE_TYPE_RADIUS);
-  const hasColorLayer = measureOptions.some(
-    l => l.type === MEASURE_TYPE_COLOR || l.type === MEASURE_TYPE_SPECTRUM,
-  );
+  const hasColorLayer = measureOptions.some(l => coloredMeasureTypes.includes(l.type));
 
   const displayedLegends = measureOptions.filter(({ type }) => type !== MEASURE_TYPE_RADIUS);
 

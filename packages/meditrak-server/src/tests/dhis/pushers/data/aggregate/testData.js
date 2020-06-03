@@ -3,8 +3,7 @@
  * Copyright (c) 2019 Beyond Essential Systems Pty Ltd
  */
 import moment from 'moment';
-import { TYPES } from '@tupaia/database';
-import { generateTestId } from '../../../../testUtilities';
+import { generateTestId, TYPES } from '@tupaia/database';
 import { ANSWER_TYPES } from '../../../../../database/models/Answer';
 
 export const ORGANISATION_UNIT_ID = 'org_unit_xxx';
@@ -117,7 +116,7 @@ export const DATA_SET_COMPLETION_DIMENSIONS = {
 };
 export const DATA_SET_COMPLETION = {
   ...DATA_SET_COMPLETION_DIMENSIONS,
-  date: moment.utc(SURVEY_RESPONSE.end_time).format('YYYY-MM-DDTkk:mm:ss'),
+  date: moment.utc(SURVEY_RESPONSE.end_time).format('YYYY-MM-DDTHH:mm:ss'),
   storedBy: STORED_BY,
 };
 export const SERVER_NAME = 'test server name';

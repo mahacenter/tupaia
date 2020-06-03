@@ -4,11 +4,13 @@
  **/
 
 import { get } from 'lodash';
+import { getUniqueEntries } from '@tupaia/utils';
 import { ChangeDetailGenerator } from '../externalApiSync';
 
 // Store certain details for faster sync processing
 export class DhisChangeDetailGenerator extends ChangeDetailGenerator {
   async generateEntityDetails(entities) {
+    if (entities.length === 0) return {};
     const changeDetailsById = {};
     entities.forEach(entity => {
       const isDataRegional = get(entity, 'metadata.dhis.isDataRegional', true);
@@ -18,7 +20,8 @@ export class DhisChangeDetailGenerator extends ChangeDetailGenerator {
   }
 
   async generateAnswerDetails(answers) {
-    const surveyResponseIds = this.getUniqueEntries(answers.map(a => a.survey_response_id));
+    if (answers.length === 0) return {};
+    const surveyResponseIds = getUniqueEntries(answers.map(a => a.survey_response_id));
     const surveyResponses = await this.models.surveyResponse.find({ id: surveyResponseIds });
     const surveyResponseDetailsById = await this.generateSurveyResponseDetails(surveyResponses);
     const changeDetailsById = {};
@@ -29,14 +32,15 @@ export class DhisChangeDetailGenerator extends ChangeDetailGenerator {
   }
 
   async generateSurveyResponseDetails(surveyResponses) {
-    const surveyIds = this.getUniqueEntries(surveyResponses.map(r => r.survey_id));
+    if (surveyResponses.length === 0) return {};
+    const surveyIds = getUniqueEntries(surveyResponses.map(r => r.survey_id));
     const surveys = await this.models.survey.find({ id: surveyIds });
     const isDataRegionalBySurveyId = {};
     surveys.forEach(s => {
       isDataRegionalBySurveyId[s.id] = s.getIsDataForRegionalDhis2();
     });
 
-    const entityIds = this.getUniqueEntries(surveyResponses.map(r => r.entity_id));
+    const entityIds = getUniqueEntries(surveyResponses.map(r => r.entity_id));
     const entities = await this.models.entity.find({ id: entityIds });
     const orgUnitByEntityId = {};
     await Promise.all(
@@ -79,6 +83,6 @@ export class DhisChangeDetailGenerator extends ChangeDetailGenerator {
       ...surveyResponseDetailsById,
     };
 
-    return updateChanges.map(c => JSON.stringify(detailsByChangeId[c.record_id]));
+    return updateChanges.map(c => JSON.stringify(detailsByChangeId[c.record.id]));
   };
 }

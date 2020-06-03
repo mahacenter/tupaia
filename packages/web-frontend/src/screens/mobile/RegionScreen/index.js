@@ -29,7 +29,11 @@ import { DARK_BLUE, MOBILE_MARGIN_SIZE, WHITE } from '../../../styles';
 import { getMapUrl } from '../../../utils';
 import { getSingleFormattedValue } from '../../../utils/measures';
 import { ENTITY_TYPE } from '../../../constants';
-import { getCurrentDashboardKey } from '../../../selectors';
+import {
+  selectCurrentDashboardKey,
+  selectCurrentOrgUnit,
+  selectOrgUnitChildren,
+} from '../../../selectors';
 
 const MAP_WIDTH = 420;
 const MAP_HEIGHT = 250;
@@ -111,11 +115,8 @@ class RegionScreen extends PureComponent {
       isMeasureLoading,
       currentDashboardKey,
       onChangeDashboardGroup,
+      title,
     } = this.props;
-
-    const title = mobileListItems.some(i => i.data && i.data.type === ENTITY_TYPE.FACILITY)
-      ? 'Facilities'
-      : 'Districts';
 
     return (
       <div>
@@ -131,11 +132,10 @@ class RegionScreen extends PureComponent {
         <div>
           <ExpandableList
             items={mobileListItems.map(item => (
-              <SelectListItem onSelect={onChangeOrgUnit} item={item} key={item.key} />
+              <SelectListItem onSelect={onChangeOrgUnit} {...item} />
             ))}
-            expandedByDefault={true}
+            expandedByDefault
             title={title}
-            onSelectItem={unit => onChangeOrgUnit(unit)}
             filterTitle="Measures"
             filters={measureFilters}
             currentFilter={selectedFilter}
@@ -237,11 +237,12 @@ const getListItemsFromOrganisationUnitChildren = (
           return getSingleFormattedValue(dataItem, measureOptions);
         };
 
-  return organisationUnitChildren.map(item => ({
-    title: item.name,
-    key: item.organisationUnitCode,
-    data: item,
-    subTitle: getSubtitle(item.organisationUnitCode),
+  return organisationUnitChildren.map(({ name, organisationUnitCode, type }) => ({
+    title: name,
+    key: organisationUnitCode,
+    orgUnitCode: organisationUnitCode,
+    subTitle: getSubtitle(organisationUnitCode),
+    type,
   }));
 };
 
@@ -256,17 +257,21 @@ const getMeasureFiltersForHierarchy = measureHierarchy =>
   }));
 
 const mapStateToProps = state => {
-  const { currentOrganisationUnit, dashboardConfig, loadingOrganisationUnit } = state.global;
+  const { currentOrganisationUnitCode, dashboardConfig, isLoadingOrganisationUnit } = state.global;
   const { measureHierarchy, currentMeasure, isExpanded } = state.measureBar;
   const { measureInfo, isMeasureLoading } = state.map;
-  const { isGroupSelectExpanded, currentDashboardKey } = state.dashboard;
+  const { isGroupSelectExpanded } = state.dashboard;
   const hasSelectedMeasureId = currentMeasure !== undefined;
 
   const mobileListItems = getListItemsFromOrganisationUnitChildren(
-    currentOrganisationUnit.organisationUnitChildren,
+    selectOrgUnitChildren(state, currentOrganisationUnitCode),
     isMeasureLoading,
     measureInfo,
   );
+
+  const title = mobileListItems.some(i => i && i.type === ENTITY_TYPE.FACILITY)
+    ? 'Facilities'
+    : 'Districts';
 
   const measureFilters = getMeasureFiltersForHierarchy(measureHierarchy);
 
@@ -276,15 +281,16 @@ const mapStateToProps = state => {
 
   return {
     dashboardConfig,
-    currentDashboardKey: getCurrentDashboardKey(state),
-    orgUnit: currentOrganisationUnit,
+    currentDashboardKey: selectCurrentDashboardKey(state),
+    orgUnit: selectCurrentOrgUnit(state),
     mobileListItems,
     measureFilters,
     selectedFilter,
     measureFilterIsExpanded: isExpanded,
     dashboardFilterIsExpanded: isGroupSelectExpanded,
-    isLoading: !!loadingOrganisationUnit,
+    isLoading: isLoadingOrganisationUnit,
     isMeasureLoading,
+    title,
   };
 };
 
@@ -293,7 +299,7 @@ const mapDispatchToProps = dispatch => ({
   onClearMeasure: () => dispatch(clearMeasure()),
   onToggleMeasureExpand: () => dispatch(toggleMeasureExpand()),
   onToggleDashboardSelectExpand: () => dispatch(toggleDashboardSelectExpand()),
-  onChangeOrgUnit: orgUnit => dispatch(changeOrgUnit(orgUnit, false)),
+  onChangeOrgUnit: organisationUnitCode => dispatch(changeOrgUnit(organisationUnitCode, false)),
   onChangeDashboardGroup: name => dispatch(changeDashboardGroup(name)),
 });
 
@@ -310,8 +316,4 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-  mergeProps,
-)(RegionScreen);
+export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(RegionScreen);

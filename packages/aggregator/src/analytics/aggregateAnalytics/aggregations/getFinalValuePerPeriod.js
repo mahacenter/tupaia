@@ -3,15 +3,8 @@
  * Copyright (c) 2017 - 2020 Beyond Essential Systems Pty Ltd
  */
 
-import {
-  PERIOD_TYPES,
-  convertToPeriod,
-  findCoarsestPeriodType,
-  getCurrentPeriod,
-  getPeriodsInRange,
-  periodToType,
-} from '@tupaia/dhis-api';
-import { getPreferredPeriod } from './getPreferredPeriod';
+import { PERIOD_TYPES, convertToPeriod, findCoarsestPeriodType, periodToType } from '@tupaia/utils';
+import { getPreferredPeriod, getContinuousPeriodsForAnalytics } from './utils';
 
 /**
  * Cache of analytics per dataElement, organisationUnit and period
@@ -114,8 +107,12 @@ class FinalValueAggregator {
     this.cache = cache;
   }
 
-  getContinuousValues(startPeriod, endPeriod) {
-    const periods = getPeriodsInRange(startPeriod, endPeriod);
+  getContinuousValues(analytics, aggregationPeriod, fillEmptyValuesTilCurrentPeriod) {
+    const periods = getContinuousPeriodsForAnalytics(
+      analytics,
+      aggregationPeriod,
+      fillEmptyValuesTilCurrentPeriod,
+    );
 
     const values = [];
     this.cache.iterateOrganisationUnitCache(organisationUnitCache => {
@@ -150,6 +147,7 @@ class FinalValueAggregator {
 export const getFinalValuePerPeriod = (analytics, aggregationPeriod, inOptions) => {
   const defaultOptions = {
     fillEmptyValues: false,
+    fillEmptyValuesTilCurrentPeriod: false,
     preferredPeriodType: PERIOD_TYPES.YEAR,
   };
 
@@ -157,17 +155,11 @@ export const getFinalValuePerPeriod = (analytics, aggregationPeriod, inOptions) 
   const cache = new FinalValueCache(analytics, aggregationPeriod, options.preferredPeriodType);
   const valueAggregator = new FinalValueAggregator(cache);
 
-  if (options.fillEmptyValues) {
-    const periodsInAnalytics = analytics.map(analytic =>
-      convertToPeriod(analytic.period, aggregationPeriod),
-    );
-    const endPeriod = getCurrentPeriod(aggregationPeriod);
-    const startPeriod = periodsInAnalytics.length
-      ? Math.min(...periodsInAnalytics).toString()
-      : endPeriod;
-
-    return valueAggregator.getContinuousValues(startPeriod, endPeriod);
-  }
-
-  return valueAggregator.getDistinctValues();
+  return options.fillEmptyValues
+    ? valueAggregator.getContinuousValues(
+        analytics,
+        aggregationPeriod,
+        options.fillEmptyValuesTilCurrentPeriod,
+      )
+    : valueAggregator.getDistinctValues();
 };

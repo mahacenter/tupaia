@@ -1,25 +1,24 @@
-export { DhisTranslationHandler } from './dhisTranslationHandler';
 export { aggregateOperationalFacilityValues } from './aggregateOperationalFacilityValues';
 export { countByOrganisationUnitByValue } from './countByOrganisationUnitByValue';
 export { calculatePercentagesWithinRange } from './calculatePercentagesWithinRange';
 export { mapOrgUnitIdsToGroupIds } from './mapOrgUnitIdsToGroupIds';
 export { mapOrgUnitToGroupCodes } from './mapOrgUnitToGroupCodes';
 export { getMatchedNumeratorsAndDenominators } from './getMatchedNumeratorsAndDenominators';
-export { getOrganisationUnitTypeForFrontend } from './getOrganisationUnitTypeForFrontend';
 export {
-  getBasicFacilityTypeName,
-  getBasicFacilityTypeNamePlural,
+  pluraliseFacilityType,
+  translateCategoryCodeToFacilityType,
 } from './facilityTypeTranslation';
 export { getPacificFacilityStatuses } from './getPacificFacilityStatuses';
-export { getLevelIndex } from './getLevelIndex';
 export getChildOrganisationUnits from './getChildOrganisationUnits';
-export { getFacilityStatusCounts, getFacilityStatuses } from './getFacilityStatuses';
+export {
+  getFacilityStatusCounts,
+  getFacilityStatuses,
+  fetchOperationalFacilityCodes,
+} from './getFacilityStatuses';
 export { getDataElementCodesInGroup, getDataElementsInGroup } from './getDataElementsInGroup';
 export { getDataElementFromId } from './getDataElementFromId';
 export {
   parseFacilityTypeData,
-  sortFacilityTypesByLevel,
-  getAllFacilityTypesOfFacilities,
   filterOutOrganisationUnitsNotInWorld,
 } from './organisationUnitTypeUtils';
 export { getDataElementGroups } from './getDataElementGroups';
@@ -35,8 +34,8 @@ export { timestampToPeriodName } from './timestampToPeriodName';
 export { limitRange } from './limitRange';
 export { regexLabel } from './regexLabel';
 export { findLatestPeriod } from './findLatestPeriod';
+export { filterEntities } from './filterEntities';
 export { getDateRange } from './getDateRange';
-export { getEntityLocationForFrontend } from './getEntityLocationForFrontend';
 export { mapDataSourcesToElementCodes } from './mapDataSourcesToElementCodes';
 export { parseCoordinates } from './parseCoordinates';
 export { composeBuiltData } from './composeBuiltData';

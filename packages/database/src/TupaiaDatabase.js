@@ -71,6 +71,9 @@ export class TupaiaDatabase {
 
   maxBindingsPerQuery = MAX_BINDINGS_PER_QUERY;
 
+  // can be replaced with 'generateTestId' by tests
+  generateId = generateId;
+
   closeConnections() {
     if (this.changeChannel) {
       this.changeChannel.close();
@@ -99,7 +102,7 @@ export class TupaiaDatabase {
     return this.changeChannelPromise;
   }
 
-  addChangeHandlerForCollection(collectionName, changeHandler, key = generateId()) {
+  addChangeHandlerForCollection(collectionName, changeHandler, key = this.generateId()) {
     // if a change handler is being added, this db needs a change channel - make sure it's instantiated
     this.getOrCreateChangeChannel();
     this.getChangeHandlersForCollection(collectionName)[key] = changeHandler;
@@ -244,7 +247,7 @@ export class TupaiaDatabase {
 
   async create(recordType, record) {
     if (!record.id) {
-      record.id = generateId();
+      record.id = this.generateId();
     }
     await this.query({
       recordType,
@@ -289,7 +292,7 @@ export class TupaiaDatabase {
 
   async updateOrCreate(recordType, identifiers, updatedFields) {
     // Put together the full new record that will be created, if no matching record exists
-    const newId = generateId(); // Generate a new id, in no id was provided
+    const newId = this.generateId(); // Generate a new id, in case no id was provided
     const updatedFieldsWithoutUndefined = JSON.parse(JSON.stringify(updatedFields));
     const newRecord = { id: newId, ...identifiers, ...updatedFieldsWithoutUndefined };
 
@@ -461,7 +464,14 @@ function buildQuery(connection, queryConfig, where = {}, options = {}) {
   }
 
   // Add filtering (or WHERE) details if provided
-  query = addWhereClause(query[queryMethod](queryMethodParameter || options.columns), where);
+  const columns =
+    options.columns &&
+    options.columns.map(columnSpec => {
+      if (typeof columnSpec === 'string') return columnSpec;
+      const [alias, selector] = Object.entries(columnSpec)[0];
+      return { [alias]: connection.raw(selector) };
+    });
+  query = addWhereClause(query[queryMethod](queryMethodParameter || columns), where);
 
   // Add sorting information if provided
   if (options.sort) {
