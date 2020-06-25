@@ -411,6 +411,7 @@ function* fetchCountryAccessDataIfRequired(action) {
 
 function* watchFetchCountryAccessDataAndFetchIt() {
   yield takeLatest(OPEN_USER_DIALOG, fetchCountryAccessDataIfRequired);
+  yield takeLatest(REQUEST_PROJECT_ACCESS, fetchCountryAccessDataIfRequired);
 }
 
 /**
