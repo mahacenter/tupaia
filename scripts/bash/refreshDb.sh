@@ -33,7 +33,7 @@ done
 psql postgres -c 'DROP DATABASE "tupaia"'
 psql postgres -c 'CREATE DATABASE "tupaia" WITH OWNER "tupaia"'
 psql tupaia -c 'CREATE EXTENSION postgis'
-psql tupaia -U tupaia < $db_dump_path
+psql tupaia < $db_dump_path
 
 if [ $migrate = true ]; then
   yarn migrate;
