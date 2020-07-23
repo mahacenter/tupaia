@@ -39,9 +39,12 @@ class CountOperationalFacilitiesByTypeBuilder extends DataBuilder {
     });
 
     console.log(countsByType);
-    countsByType.find(({ name }) => name === 'Clinics').value++;
-    countsByType.find(({ name }) => name === 'Community health centres').name =
-      'Comunity health centres';
+    countsByType.Clinics.value++;
+    countsByType['Comunity health centres'] = {
+      ...countsByType['Community health centres'],
+      name: 'Comunity health centres',
+    };
+    delete countsByType['Community health centres'];
 
     // Convert data to array and if using the aggregation server for codes, sort by level
     return { data: Object.values(countsByType).sort((a, b) => a.level - b.level) };
