@@ -30,13 +30,20 @@ done
 [[ $watch = "true" ]] && build_args="--watch" || build_args=""
 [[ $watch = "true" ]] && build_ts_args="--watch" || build_ts_args=""
 
+# ui-components building is quite resource intensive, so we avoid parallelising
+PACKAGES_FOR_SERIAL_BUILD=("ui-components")
+
 concurrent_build_commands=()
 serial_build_commands=()
 
 # Build dependencies
 for PACKAGE in $(${DIR}/getInternalDependencies.sh); do
   build_command="yarn workspace @tupaia/${PACKAGE} build $build_args"
-  serial_build_commands+=("${build_command}")
+  if [[ " ${PACKAGES_FOR_SERIAL_BUILD[@]} " =~ " ${PACKAGE} " ]]; then
+    serial_build_commands+=("${build_command}")
+  else
+    concurrent_build_commands+=("\"${build_command}\"")
+  fi
 done
 
 # Build types
@@ -45,6 +52,10 @@ if [ $with_types == "true" ]; then
     concurrent_build_commands+=("\"yarn workspace @tupaia/${PACKAGE} build:ts $build_ts_args\"")
   done
 fi
+
+echo "Concurrently building internal dependencies"
+echo "yarn concurrently ${concurrent_build_commands[@]}"
+eval "yarn concurrently ${concurrent_build_commands[@]}"
 
 echo "Serially building resource intensive internal dependencies"
 for build_command in "${serial_build_commands[@]}"; do
