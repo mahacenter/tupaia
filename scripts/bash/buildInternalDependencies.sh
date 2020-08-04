@@ -46,3 +46,4 @@ fi
 
 echo yarn concurrently ${concurrent_build_commands}
 eval "yarn concurrently ${concurrent_build_commands}"
+echo "Concurrently building internal dependencies"
