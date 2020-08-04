@@ -30,8 +30,8 @@ done
 [[ $watch = "true" ]] && build_args="--watch" || build_args=""
 [[ $watch = "true" ]] && build_ts_args="--watch" || build_ts_args=""
 
-# ui-components building is quite resource intensive, so we avoid parallelising
-PACKAGES_FOR_SERIAL_BUILD=("ui-components")
+# building all packages in parallel is quite resource intensive, so pull some out into serial
+PACKAGES_FOR_SERIAL_BUILD=("access-policy" "aggregator" "auth")
 
 concurrent_build_commands=()
 serial_build_commands=()
