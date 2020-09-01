@@ -19,7 +19,6 @@ import { DIALOG_Z_INDEX, WHITE } from '../../styles';
 
 const formatLabels = {
   png: 'PNG',
-  pdf: 'PDF',
   xlsx: 'Excel (Raw Data)',
 };
 
@@ -161,16 +160,20 @@ ExportDialog.propTypes = {
   onChartExport: PropTypes.func.isRequired,
   selectedFormat: PropTypes.string.isRequired,
   onSelectFormat: PropTypes.func.isRequired,
+  projectCode: PropTypes.string,
 };
 
 const mapStateToProps = state => {
-  const { chartExport, authentication, disaster } = state;
+  const { chartExport, authentication, disaster, project: projectObject } = state;
   const { currentUserEmail } = authentication;
   const { selectedDisaster } = disaster;
+
+  const projectCode = projectObject ? projectObject.activeProjectCode : null;
 
   return {
     emailAddress: currentUserEmail,
     selectedDisaster,
+    projectCode,
     ...chartExport,
   };
 };
@@ -199,6 +202,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
         chartType,
         extraConfig,
         selectedFormat,
+        projectCode,
       } = stateProps;
 
       dispatch(
@@ -212,6 +216,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => {
           endDate,
           chartType,
           extraConfig,
+          projectCode,
           exportFileName: chartType
             ? `tupaia-export-${chartType}.${selectedFormat}`
             : `tupaia-export.${selectedFormat}`,

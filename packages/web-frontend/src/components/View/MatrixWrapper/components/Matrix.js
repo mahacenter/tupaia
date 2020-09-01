@@ -345,7 +345,7 @@ export class Matrix extends PureComponent {
 
     return rootRows
       .map(({ description, category, categoryId, rowInfo, ...cellData }, index) => {
-        const rowKey = `${description}_${index}`;
+        const rowKey = parent ? `${parent}_${description}_${index}` : `${description}_${index}`;
         const isRowHighlighted = rowKey === highlightedRow;
 
         if (category) {
@@ -390,7 +390,7 @@ export class Matrix extends PureComponent {
           );
         }
 
-        if (isSearchActive && !this.doesMatchSearch(row.dataElement)) {
+        if (isSearchActive && !this.doesMatchSearch(description)) {
           return null;
         }
 
@@ -437,10 +437,13 @@ export class Matrix extends PureComponent {
     const { columns, title, renderPeriodSelector } = this.props;
     const { startColumn, searchTerm } = this.state;
     const { numberOfColumnsPerPage } = this.props;
+    const searchPlaceholder =
+      (this.props.rows[0] && `e.g. ${this.props.rows[0].description}`) || 'Search rows';
 
     return (
       <HeaderRow
         title={title}
+        searchPlaceholder={searchPlaceholder}
         columns={columns}
         startColumn={startColumn}
         numberOfColumnsPerPage={numberOfColumnsPerPage}
