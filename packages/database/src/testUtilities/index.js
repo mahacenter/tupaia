@@ -8,6 +8,7 @@ export { buildAndInsertSurveyResponses } from './buildAndInsertSurveyResponses';
 export { clearTestData } from './clearTestData';
 export { generateTestId } from './generateTestId';
 export { generateValueOfType } from './generateValueOfType';
+export { getStubModels } from './getStubModels';
 export { getTestDatabase } from './getTestDatabase';
 export { populateTestData } from './populateTestData';
 export { upsertDummyRecord, findOrCreateDummyRecord } from './upsertDummyRecord';
