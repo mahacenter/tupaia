@@ -28,7 +28,7 @@ describe.only('One Time Login', function () {
 
   const headers = { authorization: getAuthorizationHeader() };
 
-  describe('One Time Login tokens', function () {
+  describe.only('One Time Login tokens', function () {
     it('should only be able to login once with a one time login token', async function () {
       const emailAddress = randomEmail();
 
