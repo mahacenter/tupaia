@@ -10,7 +10,7 @@ import moment from 'moment';
 import { TestableApp, getAuthorizationHeader } from './TestableApp';
 import { randomEmail } from './testUtilities';
 
-describe.only('One Time Login', function () {
+describe('One Time Login', function () {
   const app = new TestableApp();
   const { models } = app;
   const { VERIFIED } = models.user.emailVerifiedStatuses;
@@ -28,7 +28,7 @@ describe.only('One Time Login', function () {
 
   const headers = { authorization: getAuthorizationHeader() };
 
-  describe.only('One Time Login tokens', function () {
+  describe('One Time Login tokens', function () {
     it('should only be able to login once with a one time login token', async function () {
       const emailAddress = randomEmail();
 

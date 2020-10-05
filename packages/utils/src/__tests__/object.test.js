@@ -13,7 +13,7 @@ import {
   getSortByKey,
 } from '../object';
 
-describe.only('object', () => {
+describe('object', () => {
   describe('getKeysSortedByValues', () => {
     const testData = [
       [
