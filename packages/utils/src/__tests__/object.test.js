@@ -14,7 +14,7 @@ import {
 } from '../object';
 
 describe('object', () => {
-  describe('getKeysSortedByValues', () => {
+  describe('getKeysSortedByValue', () => {
     const testData = [
       [
         'should sort the keys of an object containing string values',
