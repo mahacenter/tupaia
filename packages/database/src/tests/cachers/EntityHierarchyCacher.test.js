@@ -64,6 +64,7 @@ describe('EntityHierarchyCacher', () => {
   });
 
   afterEach(async () => {
+    hierarchyCacher.stopListeningForChanges();
     await clearTestData(models.database);
     hierarchyCacher.stopListeningForChanges();
   });
