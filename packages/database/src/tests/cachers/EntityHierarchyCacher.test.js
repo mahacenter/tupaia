@@ -55,7 +55,6 @@ describe('EntityHierarchyCacher', () => {
   };
 
   beforeEach(async () => {
-    hierarchyCacher.stopListeningForChanges();
     await populateTestData(models, TEST_DATA);
     await buildAndCacheProject('project_a_test');
     await buildAndCacheProject('project_b_test');
@@ -66,6 +65,7 @@ describe('EntityHierarchyCacher', () => {
 
   afterEach(async () => {
     await clearTestData(models.database);
+    hierarchyCacher.stopListeningForChanges();
   });
 
   describe('buildAndCacheProject', async () => {
