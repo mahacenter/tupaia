@@ -75,7 +75,7 @@ describe('Question hooks', () => {
     await buildAndInsertSurveys(models, SURVEYS);
   });
 
-  describe('Basic functionality', () => {
+  describe.only('Basic functionality', () => {
     it('Should call the hook for a machine submission', async () => {
       const spy = createHookSpy('testHook');
 
