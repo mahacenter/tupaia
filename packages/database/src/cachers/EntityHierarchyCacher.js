@@ -58,6 +58,7 @@ export class EntityHierarchyCacher {
   // add the hierarchy to the list to be rebuilt, with a debounce so that we don't rebuild
   // many times for a bulk lot of changes
   scheduleHierarchyForRebuild(hierarchyId) {
+    console.log('Scheduling', hierarchyId);
     const promiseForJob = new Promise(resolve => {
       this.scheduledRebuildJobs.push({ hierarchyId, resolve });
     });
@@ -86,7 +87,12 @@ export class EntityHierarchyCacher {
     const hierarchiesForRebuild = [...new Set(jobs.map(j => j.hierarchyId))];
 
     // run rebuild
+    const s = Date.now();
+    console.log(
+      `Running ${jobs.length} jobs, making up ${hierarchiesForRebuild.length} hierarchies`,
+    );
     await this.buildAndCacheHierarchies(hierarchiesForRebuild);
+    console.log(`Finished running ${jobs.length} jobs in ${(Date.now() - s) / 1000} seconds`);
 
     // resolve all jobs
     jobs.forEach(j => j.resolve());
