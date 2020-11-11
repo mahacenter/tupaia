@@ -125,7 +125,7 @@ const getUrlsForReports = async (database, reports, reportIdToGroups) => {
   const urls = await Promise.all(reports.map(getUrlForReport));
 
   return {
-    urls: urls.filter(u => u).sort(),
+    urls: urls.filter(u => u).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
     skippedReports: filterValues(skippedReports, r => r.length > 0),
   };
 };
