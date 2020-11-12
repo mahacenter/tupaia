@@ -36,9 +36,7 @@ describe('Dashboard reports', () => {
 
       cy.visit(url);
       cy.wait('@report').then(({ response }) => {
-        const isMatrixReport = response.body.type === 'matrix';
-        if (isMatrixReport) {
-          // Wait for the expanded matrix to load
+        if (response.body.type === 'matrix') {
           cy.wait('@report');
         }
       });
