@@ -3,22 +3,11 @@
  * Copyright (c) 2017 - 2020 Beyond Essential Systems Pty Ltd
  */
 
+import { compareAsc, compareDesc } from './compare';
+
 /**
  * @typedef {Object<string, any>[] | Object<string, Object<string, any>>} ObjectCollection
  */
-
-const compareAsc = (a, b) => {
-  if (typeof a === 'string' && typeof b === 'string') {
-    return a.localeCompare(b, undefined, { numeric: true });
-  }
-
-  if (a < b) {
-    return -1;
-  }
-  return a > b ? 1 : 0;
-};
-
-const compareDesc = (a, b) => compareAsc(a, b) * -1;
 
 /**
  * Sorts the keys in the provided object by their corresponding values
@@ -61,7 +50,7 @@ export function getSortByExtractedValue(valueExtractor, options) {
     const valueB = valueExtractor(b);
 
     if (typeof valueA === 'string' && typeof valueB === 'string') {
-      return valueA.localeCompare(valueB, undefined, { numeric: true });
+      return compareAsc(valueA, valueB);
     }
 
     if (valueA < valueB) {
