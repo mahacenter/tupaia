@@ -41,5 +41,6 @@ Cypress.Commands.add('snapshotHtml', { prevSubject: true }, (subject, snapshotOp
   if (!Cypress.dom.isJquery(subject)) {
     throw new Error('Subject must be a DOM element');
   }
+  cy.screenshot();
   return cy.wrap(serializeReactToHTML(subject)).snapshot(snapshotOptions);
 });

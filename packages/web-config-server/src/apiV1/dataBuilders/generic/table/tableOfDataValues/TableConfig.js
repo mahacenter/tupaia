@@ -3,7 +3,7 @@
  * Copyright (c) 2019 Beyond Essential Systems Pty Ltd
  */
 
-import { compareAsc } from '@tupaia/utils';
+import { compareAsc, reduceToDictionary } from '@tupaia/utils';
 import { TotalCalculator } from './TotalCalculator';
 
 const METADATA_FIELDS = {
@@ -12,6 +12,16 @@ const METADATA_FIELDS = {
 };
 
 const METADATA_FIELD_TRANSLATORS = {
+  $orgUnit: async (models, results) => {
+    const orgUnitCodes = results.map(({ organisationUnit }) => organisationUnit);
+    const orgUnits = await models.entity.find({ code: orgUnitCodes });
+    const orgUnitCodeToName = reduceToDictionary(orgUnits, 'code', 'name');
+
+    return results.map(res => ({
+      ...res,
+      orgUnitName: orgUnitCodeToName[res.organisationUnit],
+    }));
+  },
   $orgUnitTypeName: async (models, results) => {
     const orgUnitCodes = results.map(({ organisationUnit }) => organisationUnit);
     const facilities = await models.facility.find({ code: orgUnitCodes });

@@ -7,5 +7,7 @@
   "responseTimeout": 60000,
   "useRelativeSnapshots": true,
   "viewportHeight": 900,
-  "viewportWidth": 1400
+  "viewportWidth": 1400,
+  "video": false,
+  "trashAssetsBeforeRuns": false
 }
