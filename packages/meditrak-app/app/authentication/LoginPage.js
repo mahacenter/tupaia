@@ -106,10 +106,12 @@ export class LoginPage extends React.Component {
               }}
             />
           </View>
-          <View style={localStyles.actions}>
+          <View style={localStyles.horizontalContainer}>
             {isLoggingIn && renderLoadingSpinner()}
             {!isLoggingIn &&
               renderSubmitButton(() => onLogin(emailAddress, password), !loginButtonIsEnabled)}
+          </View>
+          <View style={localStyles.horizontalContainer}>
             {!isLoggingIn && renderCreateAccountLink(onCreateAccount, isLoggingIn)}
           </View>
         </KeyboardAvoidingView>
@@ -144,7 +146,6 @@ LoginPage.defaultProps = {
 const HORIZONTAL_MARGIN = 20;
 const localStyles = StyleSheet.create({
   container: {
-    alignItems: 'center',
     justifyContent: 'center',
   },
   horizontalContainer: {
@@ -168,11 +169,8 @@ const localStyles = StyleSheet.create({
     padding: 0,
     paddingTop: 15,
   },
-  actions: {
-    marginTop: 40,
-    width: '100%',
-  },
   loginButton: {
+    marginTop: 40,
     marginBottom: 10,
   },
   text: {
