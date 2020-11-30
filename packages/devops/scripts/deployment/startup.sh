@@ -8,7 +8,7 @@ export PATH=/home/ubuntu/.local/bin:/home/ubuntu/.yarn/bin:/home/ubuntu/.config/
 export HOME_DIRECTORY="/Users/Edwin/Documents/Git/tupaia"
 
 DIR=$(dirname "$0")
-export STAGE="test-1-checkout-latest"
+export STAGE="test-2-checkout-latest"
 echo "Starting up instance for ${STAGE}"
 
 # Set the branch based on STAGE
