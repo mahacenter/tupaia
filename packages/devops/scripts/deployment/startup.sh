@@ -5,10 +5,10 @@
 export PATH=/home/ubuntu/.local/bin:/home/ubuntu/.yarn/bin:/home/ubuntu/.config/yarn/global/node_modules/.bin:/home/ubuntu/.nvm/versions/node/v12.18.3/bin:/usr/local/bin:$PATH
 
 # Set the home directory of the user
-export HOME_DIRECTORY="/home/ubuntu/tupaia"
+export HOME_DIRECTORY="/Users/Edwin/Documents/Git/tupaia"
 
 DIR=$(dirname "$0")
-export STAGE=$(${DIR}/../utility/getEC2TagValue.sh Stage)
+export STAGE="test-1-checkout-latest"
 echo "Starting up instance for ${STAGE}"
 
 # Set the branch based on STAGE
