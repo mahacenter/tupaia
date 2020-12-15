@@ -10,8 +10,11 @@ import { Aggregation, Analytic, AnalyticValue, FetchOptions, Indicator } from '.
 export abstract class Builder {
   protected readonly indicator: Indicator;
 
-  constructor(indicator: Indicator) {
+  protected readonly isRoot: boolean;
+
+  constructor(indicator: Indicator, isRoot = false) {
     this.indicator = indicator;
+    this.isRoot = isRoot;
   }
 
   getIndicator() {

@@ -28,14 +28,18 @@ export class IndicatorApi implements IndicatorApiInterface {
     const { builders, codesToFetch, aggregations } = await this.getFetchAnalyticsDependencies(
       indicatorCodes,
     );
+
     const analyticsRepo = new AnalyticsRepository(this.aggregator);
-    await analyticsRepo.populate(codesToFetch, fetchOptions, aggregations);
+    await analyticsRepo.populate(codesToFetch, aggregations, fetchOptions);
     const buildersByIndicator = keyBy(builders, b => b.getIndicator().code);
 
-    return builders
+    const c = Date.now();
+    const res = builders
       .map(b => b.buildAnalytics(analyticsRepo, buildersByIndicator, fetchOptions))
       .flat()
       .sort(getSortByKey('period'));
+    console.log(`Run builders: ${Date.now() - c} ms`);
+    return res;
   }
 
   /**
@@ -55,7 +59,8 @@ export class IndicatorApi implements IndicatorApiInterface {
     let i;
     let currentIndicatorCodes = rootIndicatorCodes;
     for (i = 1; i <= MAX_INDICATOR_NESTING_DEPTH; i++) {
-      const currentBuilders = await this.indicatorCodesToBuilders(currentIndicatorCodes);
+      const isRoot = i === 1;
+      const currentBuilders = await this.indicatorCodesToBuilders(currentIndicatorCodes, isRoot);
       if (currentBuilders.length === 0) {
         // No more (nested) indicators
         break;
@@ -77,9 +82,9 @@ export class IndicatorApi implements IndicatorApiInterface {
     return { builders, codesToFetch, aggregations };
   };
 
-  private indicatorCodesToBuilders = async (codes: string[]) => {
+  private indicatorCodesToBuilders = async (codes: string[], isRoot: boolean) => {
     const indicators = await this.models.indicator.find({ code: codes });
-    return indicators.map(createBuilder);
+    return indicators.map(i => createBuilder(i, isRoot));
   };
 
   private getElementCodesByFetchCategory = async (builders: Builder[]) => {
