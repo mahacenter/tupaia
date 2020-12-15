@@ -25,14 +25,3 @@ export type ArithmeticConfig = {
   readonly parameters?: Indicator[];
   readonly defaultValues?: Record<string, number>;
 };
-
-/**
- * A fully expanded, verbose config containing as much information as possible.
- * Useful for internal code purposes
- */
-export type ExpandedArithmeticConfig = {
-  readonly formula: string;
-  readonly aggregation: Record<string, Aggregation[]>;
-  readonly parameters: Indicator[];
-  readonly defaultValues: Record<string, number>;
-};

@@ -20,17 +20,13 @@ export class Aggregator extends BaseAggregator {
     periodParams: PeriodParams,
   ) {
     const { period, startDate, endDate } = buildPeriodQueryParams(periodParams);
-    return super.fetchAnalytics(
-      dataElementCodes,
-      {
-        organisationUnitCodes: organisationUnitCodes.split(','),
-        period,
-        startDate,
-        endDate,
-        dataServices: [{ isDataRegional: true }],
-      },
-      { aggregationType: 'RAW' },
-    );
+    return super.fetchAnalytics(dataElementCodes, {
+      organisationUnitCodes: organisationUnitCodes.split(','),
+      period,
+      startDate,
+      endDate,
+      dataServices: [{ isDataRegional: true }],
+    });
   }
 
   async fetchEvents(
@@ -39,18 +35,14 @@ export class Aggregator extends BaseAggregator {
     periodParams: PeriodParams,
   ): Promise<Event[]> {
     const { period, startDate, endDate } = buildPeriodQueryParams(periodParams);
-    return super.fetchEvents(
-      programCode,
-      {
-        organisationUnitCodes: organisationUnitCodes.split(','),
-        period,
-        startDate,
-        endDate,
-        dataServices: [{ isDataRegional: true }],
-        useDeprecatedApi: false,
-      },
-      { aggregationType: 'RAW' },
-    );
+    return super.fetchEvents(programCode, {
+      organisationUnitCodes: organisationUnitCodes.split(','),
+      period,
+      startDate,
+      endDate,
+      dataServices: [{ isDataRegional: true }],
+      useDeprecatedApi: false,
+    });
   }
 }
 

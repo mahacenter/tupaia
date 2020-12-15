@@ -6,88 +6,143 @@
 import { analyticsToAnalyticClusters } from '@tupaia/data-broker';
 import { ExpressionParser } from '@tupaia/expression-parser';
 import { getUniqueEntries } from '@tupaia/utils';
-import { Analytic, AnalyticCluster, FetchOptions } from '../../types';
+import { AnalyticsRepository } from '../../AnalyticsRepository';
+import { Aggregation, Analytic, AnalyticCluster, FetchOptions, Indicator } from '../../types';
 import { Builder } from '../Builder';
-import { fetchAnalytics } from '../helpers';
-import {
-  ArithmeticConfig,
-  configValidators,
-  expandConfig,
-  ExpandedArithmeticConfig,
-} from './config';
+import { createBuilder } from '../createBuilder';
+import { ArithmeticConfig, configValidators, getAggregationsByCode } from './config';
+import { isParameterCode } from './config/helpers';
 
-const buildAnalyticClusters = (
-  analytics: Analytic[],
-  dataElements: string[],
-  defaultValues: Record<string, number>,
-) => {
-  const checkClusterIncludesAllElements = (cluster: AnalyticCluster) =>
-    dataElements.every(member => member in cluster.dataValues);
-
-  const replaceAnalyticValuesWithDefaults = (cluster: AnalyticCluster) => {
-    const returnDataValues = { ...cluster.dataValues };
-    Object.keys(defaultValues).forEach(code => {
-      returnDataValues[code] = returnDataValues[code] ?? defaultValues[code];
-    });
-
-    return { ...cluster, dataValues: returnDataValues };
-  };
-
-  // Remove clusters that do not include all specified elements
-  const clusters = analyticsToAnalyticClusters(analytics);
-  return clusters.map(replaceAnalyticValuesWithDefaults).filter(checkClusterIncludesAllElements);
+/**
+ * Config used by the builder. It is essential a fully expanded, verbose version
+ * of the indicator config passed in by the user (`ArithmeticConfig`)
+ */
+type BuilderConfig = {
+  readonly formula: string;
+  readonly aggregation: Record<string, Aggregation[]>;
+  readonly parameters: Indicator[];
+  readonly defaultValues: Record<string, number>;
 };
 
-const buildAnalyticValuesFromClusters = (analyticClusters: AnalyticCluster[], formula: string) => {
-  const parser = new ExpressionParser();
-  const calculateValue = (dataValues: Record<string, number>) => {
-    parser.setScope(dataValues);
-    const value = parser.evaluateToNumber(formula);
-    parser.clearScope();
-    return value;
-  };
+const indicatorToBuilderConfig = (indicatorConfig: ArithmeticConfig): BuilderConfig => {
+  const { defaultValues = {}, parameters = [], ...otherFields } = indicatorConfig;
 
-  return analyticClusters
-    .map(({ organisationUnit, period, dataValues }) => ({
-      organisationUnit,
-      period,
-      value: calculateValue(dataValues),
-    }))
-    .filter(({ value }) => isFinite(value));
+  return {
+    ...otherFields,
+    defaultValues,
+    parameters,
+    aggregation: getAggregationsByCode(indicatorConfig),
+  };
 };
 
 export class ArithmeticBuilder extends Builder {
-  async buildAnalyticValues(configInput: Record<string, unknown>, fetchOptions: FetchOptions) {
-    const config = await this.processConfig(configInput);
-    const { analytics, dataElements } = await this.fetchAnalyticsAndElements(config, fetchOptions);
-    const clusters = buildAnalyticClusters(analytics, dataElements, config.defaultValues);
-    return buildAnalyticValuesFromClusters(clusters, config.formula);
+  private configCache: BuilderConfig | null = null;
+
+  get config() {
+    if (!this.configCache) {
+      const config = this.validateConfig<ArithmeticConfig>(configValidators);
+      this.configCache = indicatorToBuilderConfig(config);
+    }
+    return this.configCache;
   }
 
-  private processConfig = async (configInput: Record<string, unknown>) => {
-    const config = await this.validateConfig<ArithmeticConfig>(configInput, configValidators);
-    return expandConfig(config);
+  getElementCodesToFetch = (): string[] => {
+    const { aggregation, parameters } = this.config;
+    const codesInFormula = Object.keys(aggregation);
+    const codesInParameters = parameters.map(p => createBuilder(p).getElementCodesToFetch());
+    return getUniqueEntries(codesInParameters.concat(codesInFormula));
   };
 
-  private fetchAnalyticsAndElements = async (
-    config: ExpandedArithmeticConfig,
+  getAggregations = () => Object.values(this.config.aggregation).flat();
+
+  buildAnalyticValues(
+    populatedAnalyticsRepo: AnalyticsRepository,
+    buildersByIndicator: Record<string, Builder>,
     fetchOptions: FetchOptions,
-  ) => {
-    const { aggregation, parameters } = config;
-
-    const aggregator = this.indicatorApi.getAggregator();
-    const formulaAnalytics = await fetchAnalytics(aggregator, aggregation, fetchOptions);
-    const formulaElements = Object.keys(aggregation);
-
-    const parameterAnalytics = await this.indicatorApi.buildAnalyticsForIndicators(
-      parameters,
+  ) {
+    const analytics = this.buildAnalyticsForAllVariables(
+      populatedAnalyticsRepo,
+      buildersByIndicator,
       fetchOptions,
     );
-    const parameterElements = parameters.map(p => p.code);
+    const clusters = this.buildAnalyticClusters(analytics);
+    return this.buildAnalyticValuesFromClusters(clusters);
+  }
 
-    return {
-      analytics: formulaAnalytics.concat(parameterAnalytics),
-      dataElements: getUniqueEntries(formulaElements.concat(parameterElements)),
+  private getVariables = (formula: string) => new ExpressionParser().getVariables(formula);
+
+  /**
+   * We use the provided analytics repo (pre-populated ) and builders for nested indicators
+   * to build analytics for the following categories of variables included in the formula:
+   *
+   * a. Parameters (they take precedence over other elements with clashing codes)
+   * b. Nested indicators
+   * c. "Primitive" elements (eg `dhis`, `tupaia` elements)
+   */
+  private buildAnalyticsForAllVariables = (
+    populatedAnalyticsRepo: AnalyticsRepository,
+    buildersByIndicator: Record<string, Builder>,
+    fetchOptions: FetchOptions,
+  ) => {
+    const { aggregation, formula, parameters } = this.config;
+    const buildAnalyticsUsingBuilder = (builder: Builder) =>
+      builder.buildAnalytics(populatedAnalyticsRepo, buildersByIndicator, fetchOptions);
+
+    const buildAnalyticsForVariable = (variable: string) => {
+      if (isParameterCode(parameters, variable)) {
+        const parameter = parameters.find(p => p.code === variable) as Indicator;
+        return buildAnalyticsUsingBuilder(createBuilder(parameter));
+      }
+
+      const isIndicatorCode = variable in buildersByIndicator;
+      if (isIndicatorCode) {
+        return buildAnalyticsUsingBuilder(buildersByIndicator[variable]);
+      }
+
+      return populatedAnalyticsRepo.getAggregatedAnalyticsForElement(
+        variable,
+        aggregation[variable],
+      );
     };
+
+    return this.getVariables(formula).map(buildAnalyticsForVariable).flat();
+  };
+
+  private buildAnalyticClusters = (analytics: Analytic[]) => {
+    const { formula, defaultValues } = this.config;
+    const variables = this.getVariables(formula);
+
+    const checkClusterIncludesAllElements = (cluster: AnalyticCluster) =>
+      variables.every(element => element in cluster.dataValues);
+
+    const replaceAnalyticValuesWithDefaults = (cluster: AnalyticCluster) => {
+      const dataValues = { ...cluster.dataValues };
+      Object.keys(defaultValues).forEach(code => {
+        dataValues[code] = dataValues[code] ?? defaultValues[code];
+      });
+      return { ...cluster, dataValues };
+    };
+
+    const clusters = analyticsToAnalyticClusters(analytics);
+    // Remove clusters that do not include all specified elements
+    return clusters.map(replaceAnalyticValuesWithDefaults).filter(checkClusterIncludesAllElements);
+  };
+
+  buildAnalyticValuesFromClusters = (analyticClusters: AnalyticCluster[]) => {
+    const parser = new ExpressionParser();
+    const calculateValue = (dataValues: Record<string, number>) => {
+      parser.setScope(dataValues);
+      const value = parser.evaluateToNumber(this.config.formula);
+      parser.clearScope();
+      return value;
+    };
+
+    return analyticClusters
+      .map(({ organisationUnit, period, dataValues }) => ({
+        organisationUnit,
+        period,
+        value: calculateValue(dataValues),
+      }))
+      .filter(({ value }) => isFinite(value));
   };
 }

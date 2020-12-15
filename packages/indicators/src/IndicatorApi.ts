@@ -3,11 +3,16 @@
  * Copyright (c) 2017 - 2020 Beyond Essential Systems Pty Ltd
  */
 
+import keyBy from 'lodash.keyby';
+
 import { Aggregator } from '@tupaia/aggregator';
 import { DataBroker } from '@tupaia/data-broker';
 import { getSortByKey } from '@tupaia/utils';
-import { createBuilder } from './Builder';
-import { Analytic, FetchOptions, Indicator, IndicatorApiInterface, ModelRegistry } from './types';
+import { AnalyticsRepository } from './AnalyticsRepository';
+import { Builder, createBuilder } from './Builder';
+import { Analytic, FetchOptions, IndicatorApiInterface, ModelRegistry } from './types';
+
+const MAX_INDICATOR_NESTING_DEPTH = 10;
 
 export class IndicatorApi implements IndicatorApiInterface {
   private models: ModelRegistry;
@@ -19,30 +24,79 @@ export class IndicatorApi implements IndicatorApiInterface {
     this.aggregator = new Aggregator(dataBroker);
   }
 
-  getAggregator() {
-    return this.aggregator;
-  }
-
   async buildAnalytics(indicatorCodes: string[], fetchOptions: FetchOptions): Promise<Analytic[]> {
-    const indicators = await this.models.indicator.find({ code: indicatorCodes });
-    return this.buildAnalyticsForIndicators(indicators, fetchOptions);
-  }
-
-  async buildAnalyticsForIndicators(
-    indicators: Indicator[],
-    fetchOptions: FetchOptions,
-  ): Promise<Analytic[]> {
-    const nestedAnalytics = await Promise.all(
-      indicators.map(async indicator => this.buildAnalyticsForIndicator(indicator, fetchOptions)),
+    const { builders, codesToFetch, aggregations } = await this.getFetchAnalyticsDependencies(
+      indicatorCodes,
     );
-    return nestedAnalytics.flat().sort(getSortByKey('period'));
+    const analyticsRepo = new AnalyticsRepository(this.aggregator);
+    await analyticsRepo.populate(codesToFetch, fetchOptions, aggregations);
+    const buildersByIndicator = keyBy(builders, b => b.getIndicator().code);
+
+    return builders
+      .map(b => b.buildAnalytics(analyticsRepo, buildersByIndicator, fetchOptions))
+      .flat()
+      .sort(getSortByKey('period'));
   }
 
-  private buildAnalyticsForIndicator = async (indicator: Indicator, fetchOptions: FetchOptions) => {
-    const { code, builder: builderName, config } = indicator;
-    const builder = createBuilder(builderName, this);
-    const analyticValues = await builder.buildAnalyticValues(config, fetchOptions);
+  /**
+   * An indicator may contain references to
+   * a. Other nested indicators
+   * b. "Primitive" elements (eg `dhis`, `tupaia` elements)
+   *
+   * Here we use the first category to compile a list of codes belonging to the second category,
+   * one nesting level at a time. We also include all nested indicators and all aggregations that
+   * will be used. This information is useful to other clients that fetch and build analytics
+   */
+  private getFetchAnalyticsDependencies = async (rootIndicatorCodes: string[]) => {
+    const builders: Builder[] = [];
+    const codesToFetch = [];
+    const aggregations = [];
 
-    return analyticValues.map(value => ({ ...value, dataElement: code }));
+    let i;
+    let currentIndicatorCodes = rootIndicatorCodes;
+    for (i = 1; i <= MAX_INDICATOR_NESTING_DEPTH; i++) {
+      const currentBuilders = await this.indicatorCodesToBuilders(currentIndicatorCodes);
+      if (currentBuilders.length === 0) {
+        // No more (nested) indicators
+        break;
+      }
+
+      builders.push(...currentBuilders);
+      const codesByFetchCategory = await this.getElementCodesByFetchCategory(currentBuilders);
+      currentIndicatorCodes = codesByFetchCategory.indicator;
+      codesToFetch.push(...codesByFetchCategory.nonIndicator);
+      const currentAggregations = builders.map(b => b.getAggregations()).flat();
+      aggregations.push(...currentAggregations);
+    }
+
+    if (i > MAX_INDICATOR_NESTING_DEPTH) {
+      // Avoid getting stuck in self-referencing indicators and cyclical references
+      throw new Error(`Max indicator nesting depth reached: ${MAX_INDICATOR_NESTING_DEPTH}`);
+    }
+
+    return { builders, codesToFetch, aggregations };
+  };
+
+  private indicatorCodesToBuilders = async (codes: string[]) => {
+    const indicators = await this.models.indicator.find({ code: codes });
+    return indicators.map(createBuilder);
+  };
+
+  private getElementCodesByFetchCategory = async (builders: Builder[]) => {
+    const codesByFetchCategory: { indicator: string[]; nonIndicator: string[] } = {
+      indicator: [],
+      nonIndicator: [],
+    };
+
+    const dataElements = await this.models.dataSource.find({
+      code: builders.map(b => b.getElementCodesToFetch()).flat(),
+      type: 'dataElement',
+    });
+    dataElements.forEach(({ service_type: serviceType, code }) => {
+      const category = serviceType === 'indicator' ? 'indicator' : 'nonIndicator';
+      codesByFetchCategory[category].push(code);
+    });
+
+    return codesByFetchCategory;
   };
 }

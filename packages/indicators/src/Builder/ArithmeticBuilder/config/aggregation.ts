@@ -6,7 +6,7 @@
 import { ExpressionParser } from '@tupaia/expression-parser';
 import { toArray } from '@tupaia/utils';
 import { Aggregation } from '../../../types';
-import { getDataElementsInFormula, isParameterCode } from './helpers';
+import { isParameterCode } from './helpers';
 import { AggregationDescriptor, AggregationSpecs, ArithmeticConfig } from './types';
 
 enum AggregationType {
@@ -123,15 +123,15 @@ const descriptorToAggregation = (descriptor: AggregationDescriptor) =>
   typeof descriptor === 'object' ? descriptor : { type: descriptor };
 
 const getAggregationDictionary = (config: ArithmeticConfig): Record<string, AggregationSpecs> => {
-  const { aggregation } = config;
+  const { aggregation, formula } = config;
 
   const aggregationType = getAggregationType(aggregation);
   if (aggregationType === AggregationType.Dictionary) {
     return aggregation as Record<string, AggregationSpecs>;
   }
 
-  const elementCodes = getDataElementsInFormula(config);
-  return Object.fromEntries(elementCodes.map(code => [code, aggregation as AggregationSpecs]));
+  const variables = new ExpressionParser().getVariables(formula);
+  return Object.fromEntries(variables.map(variable => [variable, aggregation as AggregationSpecs]));
 };
 
 export const getAggregationsByCode = (config: ArithmeticConfig): Record<string, Aggregation[]> => {

@@ -4,31 +4,56 @@
  */
 
 import { ObjectValidator } from '@tupaia/utils';
-import { AnalyticValue, FetchOptions, IndicatorApiInterface } from '../types';
+import { AnalyticsRepository } from '../AnalyticsRepository';
+import { Aggregation, Analytic, AnalyticValue, FetchOptions, Indicator } from '../types';
 
 export abstract class Builder {
-  protected indicatorApi: IndicatorApiInterface;
+  protected readonly indicator: Indicator;
 
-  constructor(indicatorApi: IndicatorApiInterface) {
-    this.indicatorApi = indicatorApi;
+  constructor(indicator: Indicator) {
+    this.indicator = indicator;
   }
 
-  abstract buildAnalyticValues(
-    config: Record<string, unknown>,
-    fetchOptions: FetchOptions,
-  ): Promise<AnalyticValue[]>;
+  getIndicator() {
+    return this.indicator;
+  }
 
-  protected validateConfig = async <T extends Record<string, unknown>>(
-    config = {},
-    validators = {},
-  ): Promise<T> => {
-    await new ObjectValidator(validators).validate(
-      config,
+  abstract getElementCodesToFetch(): string[];
+
+  abstract getAggregations(): Aggregation[];
+
+  buildAnalytics = (
+    populatedAnalyticsRepo: AnalyticsRepository,
+    buildersByIndicator: Record<string, Builder>,
+    fetchOptions: FetchOptions,
+  ): Analytic[] => {
+    if (!populatedAnalyticsRepo.isPopulated()) {
+      throw new Error(
+        'buildAnalytics expects that the provided analyticsRepository is already populated',
+      );
+    }
+
+    return this.buildAnalyticValues(
+      populatedAnalyticsRepo,
+      buildersByIndicator,
+      fetchOptions,
+    ).map(value => ({ ...value, dataElement: this.indicator.code }));
+  };
+
+  abstract buildAnalyticValues(
+    populatedAnalyticsRepo: AnalyticsRepository,
+    buildersByIndicator: Record<string, Builder>,
+    fetchOptions: FetchOptions,
+  ): AnalyticValue[];
+
+  protected validateConfig = <T extends Record<string, unknown>>(validators = {}): T => {
+    new ObjectValidator(validators).validateSync(
+      this.indicator.config,
       (error: string, field: string) => new Error(`Error in field '${field}': ${error}`),
     );
     // Ideally we wouldn't return a value; we would define the return type as `asserts config is T`
     // Since async assertions are not supported yet, we return the asserted type as a workaround:
     // https://github.com/microsoft/TypeScript/issues/37515
-    return config as T;
+    return this.indicator.config as T;
   };
 }
