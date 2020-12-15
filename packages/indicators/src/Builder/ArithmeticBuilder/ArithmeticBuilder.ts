@@ -53,14 +53,21 @@ export class ArithmeticBuilder extends Builder {
     return getUniqueEntries(codesInParameters.concat(codesInFormula));
   };
 
-  getAggregations = () => Object.values(this.config.aggregation).flat();
+  getAggregations = (): Aggregation[] => {
+    const formulaAggregations = Object.values(this.config.aggregation).flat();
+    const parameterAggregations = this.config.parameters
+      .map(p => createBuilder(p).getAggregations())
+      .flat();
+
+    return formulaAggregations.concat(parameterAggregations);
+  };
 
   buildAnalyticValues(
     populatedAnalyticsRepo: AnalyticsRepository,
     buildersByIndicator: Record<string, Builder>,
     fetchOptions: FetchOptions,
   ) {
-    const analytics = this.buildAnalyticsForAllVariables(
+    const analytics = this.buildAggregatedAnalytics(
       populatedAnalyticsRepo,
       buildersByIndicator,
       fetchOptions,
@@ -79,33 +86,47 @@ export class ArithmeticBuilder extends Builder {
    * b. Nested indicators
    * c. "Primitive" elements (eg `dhis`, `tupaia` elements)
    */
-  private buildAnalyticsForAllVariables = (
+  private buildAggregatedAnalytics = (
+    populatedAnalyticsRepo: AnalyticsRepository,
+    buildersByIndicator: Record<string, Builder>,
+    fetchOptions: FetchOptions,
+  ) =>
+    this.getVariables(this.config.formula)
+      .map(variable => {
+        const analytics = this.getAnalyticsForVariable(
+          variable,
+          populatedAnalyticsRepo,
+          buildersByIndicator,
+          fetchOptions,
+        );
+        const aggregations = this.config.aggregation[variable];
+        return this.isRoot
+          ? populatedAnalyticsRepo.aggregateRootAnalytics(analytics, aggregations)
+          : populatedAnalyticsRepo.aggregateNestedAnalytics(analytics, aggregations);
+      })
+      .flat();
+
+  private getAnalyticsForVariable = (
+    variable: string,
     populatedAnalyticsRepo: AnalyticsRepository,
     buildersByIndicator: Record<string, Builder>,
     fetchOptions: FetchOptions,
   ) => {
-    const { aggregation, formula, parameters } = this.config;
+    const { parameters } = this.config;
     const buildAnalyticsUsingBuilder = (builder: Builder) =>
       builder.buildAnalytics(populatedAnalyticsRepo, buildersByIndicator, fetchOptions);
 
-    const buildAnalyticsForVariable = (variable: string) => {
-      if (isParameterCode(parameters, variable)) {
-        const parameter = parameters.find(p => p.code === variable) as Indicator;
-        return buildAnalyticsUsingBuilder(createBuilder(parameter));
-      }
+    if (isParameterCode(parameters, variable)) {
+      const parameter = parameters.find(p => p.code === variable) as Indicator;
+      return buildAnalyticsUsingBuilder(createBuilder(parameter));
+    }
 
-      const isIndicatorCode = variable in buildersByIndicator;
-      if (isIndicatorCode) {
-        return buildAnalyticsUsingBuilder(buildersByIndicator[variable]);
-      }
+    const isIndicatorCode = variable in buildersByIndicator;
+    if (isIndicatorCode) {
+      return buildAnalyticsUsingBuilder(buildersByIndicator[variable]);
+    }
 
-      return populatedAnalyticsRepo.getAggregatedAnalyticsForElement(
-        variable,
-        aggregation[variable],
-      );
-    };
-
-    return this.getVariables(formula).map(buildAnalyticsForVariable).flat();
+    return populatedAnalyticsRepo.getAnalyticsForDataElement(variable);
   };
 
   private buildAnalyticClusters = (analytics: Analytic[]) => {
