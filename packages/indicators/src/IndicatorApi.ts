@@ -25,21 +25,21 @@ export class IndicatorApi implements IndicatorApiInterface {
   }
 
   async buildAnalytics(indicatorCodes: string[], fetchOptions: FetchOptions): Promise<Analytic[]> {
-    const { builders, codesToFetch, aggregations } = await this.getFetchAnalyticsDependencies(
-      indicatorCodes,
-    );
+    const {
+      buildersByNestDepth,
+      codesToFetch,
+      aggregations,
+    } = await this.getFetchAnalyticsDependencies(indicatorCodes);
 
     const analyticsRepo = new AnalyticsRepository(this.aggregator);
     await analyticsRepo.populate(codesToFetch, aggregations, fetchOptions);
-    const buildersByIndicator = keyBy(builders, b => b.getIndicator().code);
+    const [rootBuilders = []] = buildersByNestDepth;
+    const buildersByIndicator = keyBy(buildersByNestDepth.flat(), b => b.getIndicator().code);
 
-    const c = Date.now();
-    const res = builders
+    return rootBuilders
       .map(b => b.buildAnalytics(analyticsRepo, buildersByIndicator, fetchOptions))
       .flat()
       .sort(getSortByKey('period'));
-    console.log(`Run builders: ${Date.now() - c} ms`);
-    return res;
   }
 
   /**
@@ -52,34 +52,34 @@ export class IndicatorApi implements IndicatorApiInterface {
    * will be used. This information is useful to other clients that fetch and build analytics
    */
   private getFetchAnalyticsDependencies = async (rootIndicatorCodes: string[]) => {
-    const builders: Builder[] = [];
+    const buildersByNestDepth: Builder[][] = [];
     const codesToFetch = [];
     const aggregations = [];
 
     let i;
     let currentIndicatorCodes = rootIndicatorCodes;
-    for (i = 1; i <= MAX_INDICATOR_NESTING_DEPTH; i++) {
-      const isRoot = i === 1;
+    for (i = 0; i < MAX_INDICATOR_NESTING_DEPTH; i++) {
+      const isRoot = i === 0;
       const currentBuilders = await this.indicatorCodesToBuilders(currentIndicatorCodes, isRoot);
+      buildersByNestDepth.push(currentBuilders);
       if (currentBuilders.length === 0) {
-        // No more (nested) indicators
+        // No more indicators (root or nested)
         break;
       }
 
-      builders.push(...currentBuilders);
       const codesByFetchCategory = await this.getElementCodesByFetchCategory(currentBuilders);
       currentIndicatorCodes = codesByFetchCategory.indicator;
       codesToFetch.push(...codesByFetchCategory.nonIndicator);
-      const currentAggregations = builders.map(b => b.getAggregations()).flat();
+      const currentAggregations = currentBuilders.map(b => b.getAggregations()).flat();
       aggregations.push(...currentAggregations);
     }
 
-    if (i > MAX_INDICATOR_NESTING_DEPTH) {
+    if (i === MAX_INDICATOR_NESTING_DEPTH) {
       // Avoid getting stuck in self-referencing indicators and cyclical references
       throw new Error(`Max indicator nesting depth reached: ${MAX_INDICATOR_NESTING_DEPTH}`);
     }
 
-    return { builders, codesToFetch, aggregations };
+    return { buildersByNestDepth, codesToFetch, aggregations };
   };
 
   private indicatorCodesToBuilders = async (codes: string[], isRoot: boolean) => {

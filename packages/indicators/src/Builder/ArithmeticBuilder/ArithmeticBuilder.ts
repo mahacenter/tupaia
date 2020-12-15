@@ -4,9 +4,9 @@
  */
 
 import { analyticsToAnalyticClusters } from '@tupaia/data-broker';
-import { ExpressionParser } from '@tupaia/expression-parser';
 import { getUniqueEntries } from '@tupaia/utils';
 import { AnalyticsRepository } from '../../AnalyticsRepository';
+import { getExpressionParserInstance } from '../../getExpressionParserInstance';
 import { Aggregation, Analytic, AnalyticCluster, FetchOptions, Indicator } from '../../types';
 import { Builder } from '../Builder';
 import { createBuilder } from '../createBuilder';
@@ -76,7 +76,7 @@ export class ArithmeticBuilder extends Builder {
     return this.buildAnalyticValuesFromClusters(clusters);
   }
 
-  private getVariables = (formula: string) => new ExpressionParser().getVariables(formula);
+  private getVariables = () => Object.keys(this.config.aggregation);
 
   /**
    * We use the provided analytics repo (pre-populated ) and builders for nested indicators
@@ -91,7 +91,7 @@ export class ArithmeticBuilder extends Builder {
     buildersByIndicator: Record<string, Builder>,
     fetchOptions: FetchOptions,
   ) =>
-    this.getVariables(this.config.formula)
+    this.getVariables()
       .map(variable => {
         const analytics = this.getAnalyticsForVariable(
           variable,
@@ -130,11 +130,11 @@ export class ArithmeticBuilder extends Builder {
   };
 
   private buildAnalyticClusters = (analytics: Analytic[]) => {
-    const { formula, defaultValues } = this.config;
-    const variables = this.getVariables(formula);
+    const { defaultValues } = this.config;
+    const variables = this.getVariables();
 
-    const checkClusterIncludesAllElements = (cluster: AnalyticCluster) =>
-      variables.every(element => element in cluster.dataValues);
+    const checkClusterIncludesAllVariables = (cluster: AnalyticCluster) =>
+      variables.every(variable => variable in cluster.dataValues);
 
     const replaceAnalyticValuesWithDefaults = (cluster: AnalyticCluster) => {
       const dataValues = { ...cluster.dataValues };
@@ -146,11 +146,11 @@ export class ArithmeticBuilder extends Builder {
 
     const clusters = analyticsToAnalyticClusters(analytics);
     // Remove clusters that do not include all specified elements
-    return clusters.map(replaceAnalyticValuesWithDefaults).filter(checkClusterIncludesAllElements);
+    return clusters.map(replaceAnalyticValuesWithDefaults).filter(checkClusterIncludesAllVariables);
   };
 
   buildAnalyticValuesFromClusters = (analyticClusters: AnalyticCluster[]) => {
-    const parser = new ExpressionParser();
+    const parser = getExpressionParserInstance();
     const calculateValue = (dataValues: Record<string, number>) => {
       parser.setScope(dataValues);
       const value = parser.evaluateToNumber(this.config.formula);

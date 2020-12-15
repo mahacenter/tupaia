@@ -84,7 +84,6 @@ export class AnalyticsRepository {
 
   // TODO comment - difference between root and nested indicators
   aggregateRootAnalytics = (analytics: Analytic[], aggregations: Aggregation[]) => {
-    // TODO aggregationDateRange may be undefined!
     const adjustedAnalytics = this.keepAnalyticsThatMatchFetchOptions(
       analytics,
       this.data.fetchOptions,

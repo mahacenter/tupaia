@@ -16,10 +16,19 @@ import { create, all } from 'mathjs';
  * expressionParser.evaluate('a + 2'); //returns 3
  */
 export class ExpressionParser {
+  static singletonInstance = null;
+
   constructor() {
     this.math = create(all, {});
     this.parser = this.math.parser();
     this.importFunctions();
+  }
+
+  static getSingleton() {
+    if (!this.singletonInstance) {
+      this.singletonInstance = new this();
+    }
+    return this.singletonInstance;
   }
 
   /**
