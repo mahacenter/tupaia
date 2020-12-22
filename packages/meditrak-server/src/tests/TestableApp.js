@@ -1,38 +1,43 @@
 /**
- * Tupaia MediTrak
- * Copyright (c) 2017 Beyond Essential Systems Pty Ltd
+ * Tupaia
+ * Copyright (c) 2017 - 2020 Beyond Essential Systems Pty Ltd
  */
+
 import {} from 'dotenv/config'; // Load the environment variables into process.env
-import supertest from 'supertest';
-import autobind from 'react-autobind';
 
 import { generateTestId } from '@tupaia/database';
-
+import { TestableHttpServer } from '@tupaia/utils';
 import { createApp } from '../app';
 import { getModels } from './getModels';
-
-export const DEFAULT_API_VERSION = 2;
-const getVersionedEndpoint = (endpoint, apiVersion = DEFAULT_API_VERSION) =>
-  `/v${apiVersion}/${endpoint}`;
 
 export const getAuthorizationHeader = () => {
   const credentials = `${process.env.CLIENT_USERNAME}:${process.env.CLIENT_SECRET}`;
   return `Basic ${Buffer.from(credentials).toString('base64')}`;
 };
 
-export class TestableApp {
+export class TestableApp extends TestableHttpServer {
+  models = null;
+
+  database = null;
+
+  user = {};
+
+  authToken = '';
+
   constructor() {
-    this.models = getModels();
+    const models = getModels();
+    const { database } = models;
+    database.generateId = generateTestId;
+    const app = createApp(database, models);
 
-    this.database = this.models.database;
-    this.database.generateId = generateTestId;
-
-    this.app = createApp(this.database, this.models);
-    this.user = {};
-    autobind(this);
+    super(app);
+    this.models = models;
+    this.database = database;
   }
 
-  async authenticate() {
+  getDefaultApiVersion = () => 2;
+
+  authenticate = async () => {
     const headers = { authorization: getAuthorizationHeader() };
     const body = {
       emailAddress: 'test.user@tupaia.org',
@@ -45,29 +50,9 @@ export class TestableApp {
 
     this.user = response.body.user;
     this.authToken = response.body.accessToken;
-  }
+  };
 
-  get(endpoint, options, apiVersion = DEFAULT_API_VERSION) {
-    const versionedEndpoint = getVersionedEndpoint(endpoint, apiVersion);
-    return this.addOptionsToRequest(supertest(this.app).get(versionedEndpoint), options);
-  }
-
-  post(endpoint, options, apiVersion = DEFAULT_API_VERSION) {
-    const versionedEndpoint = getVersionedEndpoint(endpoint, apiVersion);
-    return this.addOptionsToRequest(supertest(this.app).post(versionedEndpoint), options);
-  }
-
-  put(endpoint, options, apiVersion = DEFAULT_API_VERSION) {
-    const versionedEndpoint = getVersionedEndpoint(endpoint, apiVersion);
-    return this.addOptionsToRequest(supertest(this.app).put(versionedEndpoint), options);
-  }
-
-  delete(endpoint, options, apiVersion = DEFAULT_API_VERSION) {
-    const versionedEndpoint = getVersionedEndpoint(endpoint, apiVersion);
-    return this.addOptionsToRequest(supertest(this.app).delete(versionedEndpoint), options);
-  }
-
-  addOptionsToRequest(request, { headers, body } = {}) {
+  addOptionsToRequest = (request, { headers, body } = {}) => {
     if (this.authToken) {
       request.set('Authorization', `Bearer ${this.authToken}`);
     }
@@ -78,5 +63,5 @@ export class TestableApp {
       request.send(body);
     }
     return request;
-  }
+  };
 }
