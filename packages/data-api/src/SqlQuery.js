@@ -6,6 +6,8 @@
 export class SqlQuery {
   static parameteriseArray = arr => `(${arr.map(() => '?').join(',')})`;
 
+  static parameteriseArrayAsValues = arr => `(VALUES ${arr.map(() => '(?)').join(',')})`;
+
   constructor(baseQuery, baseParameters) {
     this.query = baseQuery;
     this.parameters = baseParameters;

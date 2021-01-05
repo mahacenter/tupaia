@@ -39,7 +39,7 @@ const generateBaseSqlQuery = async (
     WHERE
       question_id IN ${SqlQuery.parameteriseArray(questionIds)}
     AND
-      entity.code IN ${SqlQuery.parameteriseArray(organisationUnitCodes)}
+      entity.code IN ${SqlQuery.parameteriseArrayAsValues(organisationUnitCodes)}
   `,
     [...questionIds, ...organisationUnitCodes],
   );
