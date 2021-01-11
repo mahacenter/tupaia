@@ -1,0 +1,73 @@
+Set up Elastic Search
+
+- Set up a new elastic search cluster using the aws managed service
+- Set up the index by running the following (replacing relevant values)
+curl -X PUT "https://search-tupaia-test-s3mzchqqwhorlsgw7stw7kpwc4.ap-southeast-2.es.amazonaws.com/analytics_test?pretty" -H 'Content-Type: application/json' -d'
+{
+  "mappings": {
+    "properties": {
+      "data_element_code": {
+        "type": "keyword"
+      },
+      "entity_code": {
+        "type": "keyword"
+      },
+      "date_of_data": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss"
+      },
+      "survey_response_id": {
+        "type": "keyword"
+      },
+      "value": {
+        "type": "keyword"
+      },
+      "type": {
+        "type": "keyword"
+      },
+      "entity_name": {
+        "type": "keyword"
+      }
+    }
+  }
+}
+'
+
+- Prepare data to post against the index, by exporting data from the analytics table (excluding Laos which has funny characters), then run the following on the csv
+
+# Remove commas that aren't between columns
+sed -i '.bak' 's/[^"],[^"]//g' analytics_no_laos.txt
+
+# Convert to json objects in correct format for elastic search
+sed -i '.bak' 's/^\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^\+]*\)\+..\"/\{ \"index\": { \"_index\": \"analytics_test_mon_2\", \"_id\": \1 } }\n{"survey_response_id\":\2,\"type\":\3,\"entity_name\":\4,\"entity_code\":\5,\"data_element_code\":\6,\"value\":\7,\"date_of_data\":\8\"}/' analytics_no_laos.txt
+
+# Format funny dates correctly (this needs more work to get 100% right)
+sed -i '.bak' 's/\....\"}$/\"}/' analytics_no_laos.txt
+
+# Remove opening brackets
+sed -i '.bak' 's/(//g' analytics_no_laos.txt
+
+# Remove closing brackets
+sed -i '.bak' 's/)//g' analytics_no_laos.txt
+
+# Remove single quotes (apostrophes)
+sed -i '.bak' "s/'//g" analytics_no_laos.txt
+
+# Delete header row
+sed -i '.bak' '1d' analytics_no_laos.txt
+
+# Split into files small enough to post to elastic search
+split -l 60000 analytics_no_laos.txt analytics_no_laos_part_
+
+- Post the data in batches
+for filename in *part_a*; do
+  curl -X POST 'https://search-tupaia-test-s3mzchqqwhorlsgw7stw7kpwc4.ap-southeast-2.es.amazonaws.com/_bulk' -H 'Content-Type: application/json' --data-binary @"$filename"
+done
+
+for filename in *part_b*; do
+  curl -X POST 'https://search-tupaia-test-s3mzchqqwhorlsgw7stw7kpwc4.ap-southeast-2.es.amazonaws.com/_bulk' -H 'Content-Type: application/json' --data-binary @"$filename"
+done
+
+etc.
+
+
