@@ -61,6 +61,8 @@ export function addRoutesToApp(app) {
 
   app.use(extractApiVersion);
 
+  app.post('(/v[0-9]+)?/changes/prune', pruneChanges); // TODO not used from app version 1.5.68. Once usage stops, remove
+
   /**
    * Attach authentication to each endpoint
    */
@@ -78,7 +80,6 @@ export function addRoutesToApp(app) {
     '(/v[0-9]+)?/user/:userId/requestCountryAccess', // TODO not used from app version 1.7.93. Once usage stops, remove
     requestCountryAccess,
   );
-  app.post('(/v[0-9]+)?/changes/prune', pruneChanges); // TODO not used from app version 1.5.68. Once usage stops, remove
 
   /**
    * GET routes

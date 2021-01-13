@@ -5,6 +5,7 @@
 
 import autobind from 'react-autobind';
 import knex from 'knex';
+import { Pool } from 'pg';
 import winston from 'winston';
 import { Multilock } from '@tupaia/utils';
 
@@ -69,6 +70,7 @@ export class TupaiaDatabase {
       return true;
     };
     this.connectionPromise = connectToDatabase();
+    this.pool = new Pool(getConnectionConfig());
 
     this.handlerLock = new Multilock();
   }
