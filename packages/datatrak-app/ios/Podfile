@@ -1,0 +1,32 @@
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+
+platform :ios, '10.0'
+
+target 'TupaiaMediTrak' do
+  config = use_native_modules!
+
+  use_react_native!(:path => config["reactNativePath"])
+
+  target 'TupaiaMediTrakTests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
+  post_install do |installer|
+    installer.pods_project.targets.each do |target|
+      if target.name == "React"
+        target.remove_from_project
+      end
+    end
+  end
+
+end
+
+target 'TupaiaMediTrak-tvOS' do
+  # Pods for TupaiaMediTrak-tvOS
+  target 'TupaiaMediTrak-tvOSTests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+end
