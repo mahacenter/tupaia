@@ -46,7 +46,9 @@ const renderErrorMessage = message => (
   <StatusMessage message={message} style={localStyles.errorMessage} />
 );
 
-const renderLoadingSpinner = () => <ActivityIndicator color={THEME_COLOR_ONE} size="large" />;
+const renderLoadingSpinner = () => (
+  <ActivityIndicator color={THEME_COLOR_ONE} size="large" style={localStyles.loader} />
+);
 
 /**
  * Displays a page with a field for each emailAddress, and password, and allows users to log in to a
@@ -71,12 +73,12 @@ export class LoginPage extends React.Component {
       <TupaiaBackground style={localStyles.container}>
         <KeyboardAvoidingView behavior="padding" style={localStyles.container}>
           <StatusBar barStyle="light-content" />
-          <TupaiaLogo style={localStyles.logo} white width={168} height={69} />
+          <TupaiaLogo style={localStyles.logo} white width={220} height={80} />
           <Text style={localStyles.intro}>
-            Collect baseline data from clinics, health centres and hospitals around the world.
+            Collect baseline data from facilities around the world.
           </Text>
           {errorMessage !== '' && renderErrorMessage(errorMessage)}
-          <View style={localStyles.horizontalContainer}>
+          <View style={[localStyles.horizontalContainer, localStyles.inputContainer]}>
             <TextInput
               style={[localStyles.textInput, localStyles.text]}
               placeholder="Email Address"
@@ -92,7 +94,7 @@ export class LoginPage extends React.Component {
               }}
             />
           </View>
-          <View style={localStyles.horizontalContainer}>
+          <View style={[localStyles.horizontalContainer, localStyles.inputContainer]}>
             <TextInput
               inputRef={reference => {
                 this.passwordInputRef = reference;
@@ -112,10 +114,12 @@ export class LoginPage extends React.Component {
               }}
             />
           </View>
-          <View style={localStyles.actions}>
+          <View style={localStyles.horizontalContainer}>
             {isLoggingIn && renderLoadingSpinner()}
             {!isLoggingIn &&
               renderSubmitButton(() => onLogin(emailAddress, password), !loginButtonIsEnabled)}
+          </View>
+          <View style={localStyles.horizontalContainer}>
             {!isLoggingIn && renderCreateAccountLink(onCreateAccount, isLoggingIn)}
           </View>
         </KeyboardAvoidingView>
@@ -149,22 +153,27 @@ LoginPage.defaultProps = {
 const HORIZONTAL_MARGIN = 20;
 const localStyles = StyleSheet.create({
   container: {
-    alignItems: 'center',
     justifyContent: 'center',
   },
   horizontalContainer: {
     marginHorizontal: HORIZONTAL_MARGIN,
-    height: 50,
     flexDirection: 'row',
+    textAlign: 'center',
+  },
+  inputContainer: {
+    height: 50,
     borderBottomWidth: 1,
     borderColor: THEME_COLOR_ONE,
   },
   logo: {
-    marginBottom: DEFAULT_PADDING,
+    marginTop: -20,
+    marginBottom: 5,
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
   intro: {
-    marginBottom: 32,
-    marginHorizontal: HORIZONTAL_MARGIN,
+    marginBottom: 60,
+    marginHorizontal: 30,
     textAlign: 'center',
     opacity: 0.9,
   },
@@ -173,12 +182,16 @@ const localStyles = StyleSheet.create({
     padding: 0,
     paddingTop: 15,
   },
-  actions: {
-    marginTop: 40,
+  loginButton: {
+    marginTop: 30,
+    marginBottom: 10,
     width: '100%',
   },
-  loginButton: {
+  loader: {
+    marginTop: 30,
     marginBottom: 10,
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
   text: {
     color: THEME_COLOR_ONE,
@@ -191,6 +204,8 @@ const localStyles = StyleSheet.create({
   linkButton: {
     padding: 8,
     flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'center',
   },
   linkButtonEmphasis: {
     textDecorationLine: 'underline',

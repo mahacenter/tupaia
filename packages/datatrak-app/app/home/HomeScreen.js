@@ -9,12 +9,12 @@ import { Animated, StyleSheet, Text, FlatList, View } from 'react-native';
 import { THEME_TEXT_COLOR_FOUR, DEFAULT_PADDING, getGreyShade } from '../globalStyles';
 import { FeedItemContainer } from '../social';
 import { HomeHeaderContainer } from './HomeHeaderContainer';
-import { TupaiaLogo } from '../widgets';
+import { TupaiaHeaderLogo } from '../widgets';
 import { HomeToolbarContainer } from './HomeToolbarContainer';
 
 class HomeScreenComponent extends PureComponent {
   static navigationOptions = {
-    headerTitle: () => <TupaiaLogo />,
+    headerTitle: () => <TupaiaHeaderLogo />,
     headerTitleAlign: 'left',
   };
 

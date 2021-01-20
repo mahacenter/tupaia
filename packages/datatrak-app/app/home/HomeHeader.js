@@ -195,7 +195,7 @@ const localStyles = StyleSheet.create({
     backgroundColor: THEME_COLOR_ONE,
     flexDirection: 'row',
     padding: DEFAULT_PADDING,
-    paddingTop: 0,
+    paddingTop: 10,
   },
   nameText: {
     color: THEME_COLOR_DARK,

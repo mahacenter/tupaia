@@ -12,7 +12,7 @@ export const WelcomePage = ({ syncMessage, total, progress, isSyncing, onCancel 
   return (
     <TupaiaBackground style={localStyles.container}>
       <StatusBar barStyle="light-content" />
-      <TupaiaLogo white width={150} height={50} style={localStyles.logo} />
+      <TupaiaLogo white width={220} height={80} style={localStyles.logo} />
       <ProgressBar
         total={total}
         progress={progress}
@@ -58,6 +58,7 @@ const localStyles = StyleSheet.create({
     width: '70%',
   },
   logo: {
+    marginTop: -10,
     marginBottom: DEFAULT_PADDING,
   },
   cancelLink: {
