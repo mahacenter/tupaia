@@ -1,4 +1,4 @@
-# Meditrak Manual Test Plan
+# Datatrak Manual Test Plan
 
 _Rather than providing a large list of specific test cases this document is mostly a formalised list of features and usage flows in the app_
 
@@ -56,12 +56,12 @@ Enter various combinations of values for the various fields in the create user s
 
 ### Test Case 7 – Importing Surveys / Permissions
 
-- Log into the Meditrak app with an Admin account
+- Log into the Datatrak app with an Admin account
 - Download the ‘Test Survey.xlsx’ document from the Tupaia Import Files folder on Dropbox.
 - Import ‘Test Survey.xlsx’ to the app by logging in at https://dev-admin.tupaia.org and navigating to the Surveys page and clicking the Import button. Give it the name ‘Test Survey’ and specify just one country for it to be viewable at (e.g. Demo Land). Specify the Permissions to be ‘Admin’
-- Navigate back to the dashboard on the Meditrak app and then sync the app. Click ‘Survey a Facility’ and select the Country that you specified the survey to be available for in the previous step. This survey should be visibile for all clinics in this country
+- Navigate back to the dashboard on the Datatrak app and then sync the app. Click ‘Survey a Facility’ and select the Country that you specified the survey to be available for in the previous step. This survey should be visibile for all clinics in this country
 - The survey should not be viewable at countries that you did not specify
-- Log into the Meditrak app with non-admin accounts and ensure that this survey is not visible
+- Log into the Datatrak app with non-admin accounts and ensure that this survey is not visible
 
 ### Test Case 8 - Survey Question Types
 
@@ -84,7 +84,7 @@ Enter various combinations of values for the various fields in the create user s
 
 ### Test Case 11 – Fresh Install
 
-- Check to see if all data is sync’d correctly when Tupaia Meditrak is installed for the first time
+- Check to see if all data is sync’d correctly when Tupaia Datatrak is installed for the first time
 - Check to ensure that screens aren’t half sync’d if the internet is disconnected partway through the first ever sync
 
 ### Test Case 12 – Updates
@@ -108,7 +108,7 @@ Enter various combinations of values for the various fields in the create user s
 
 ### Test Case 15 – Activity Feed
 
-- Logging into the Meditrak app the Activity Feed should be refreshed automatically
+- Logging into the Datatrak app the Activity Feed should be refreshed automatically
 - Manually clicking the refresh button for the activity feed should update it with the latest activities
 - No Demo Land survey items should appear in the activity feed
 - No surveys that require higher than Public privileges should appear in the activity feed

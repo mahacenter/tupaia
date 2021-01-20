@@ -1,4 +1,4 @@
-rootProject.name = 'TupaiaMediTrak'
+rootProject.name = 'TupaiaDataTrak'
 
 include ':app'
 

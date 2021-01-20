@@ -16,7 +16,7 @@ import { DEFAULT_PADDING, THEME_COLOR_THREE, THEME_COLOR_ONE } from './globalSty
 
 import { requestLocationPermission } from './utilities/userLocation/permission';
 
-class MeditrakContainer extends React.Component {
+class DatatrakContainer extends React.Component {
   componentDidMount() {
     BackHandler.addEventListener('hardwareBackPress', this.onBackPress);
     database.enableSync(this.props.dispatch);
@@ -60,7 +60,7 @@ class MeditrakContainer extends React.Component {
   }
 }
 
-MeditrakContainer.propTypes = {
+DatatrakContainer.propTypes = {
   dispatch: PropTypes.func.isRequired,
 };
 
@@ -94,4 +94,4 @@ const mapDispatchToProps = dispatch => ({
   onGoBack: () => dispatch(goBack()),
 });
 
-export const Meditrak = connect(mapStateToProps, mapDispatchToProps)(MeditrakContainer);
+export const Datatrak = connect(mapStateToProps, mapDispatchToProps)(DatatrakContainer);

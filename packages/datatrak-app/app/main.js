@@ -11,7 +11,7 @@ import { createStore, compose } from 'redux';
 import { persistStore, persistCombineReducers, createTransform } from 'redux-persist';
 import { ErrorHandler } from 'redux-persist-error-handler';
 
-import { Meditrak } from './Meditrak';
+import { Datatrak } from './Datatrak';
 import { api } from './api';
 import { database } from './database';
 import { reducers } from './reducers';
@@ -64,11 +64,11 @@ const persistedStore = persistStore(store);
 const App = () => (
   <ErrorHandler persistedStore={persistedStore}>
     <Provider store={store}>
-      <Meditrak>
+      <Datatrak>
         <NavigationConnectedApp />
-      </Meditrak>
+      </Datatrak>
     </Provider>
   </ErrorHandler>
 );
 
-AppRegistry.registerComponent('TupaiaMediTrak', () => App);
+AppRegistry.registerComponent('TupaiaDataTrak', () => App);

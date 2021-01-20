@@ -150,6 +150,6 @@ Can only be done on mac, with Xcode installed
 
 ### Testing
 
-A manual test plan for the Meditrak app is located [here](__tests__/ManualTests.md)
+A manual test plan for the Datatrak app is located [here](__tests__/ManualTests.md)
 
 Note that we currently support version 1.7.81 and above
