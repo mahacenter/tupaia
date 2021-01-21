@@ -58,8 +58,6 @@ const generateBaseSqlQuery = async (
 
   sqlQuery.orderBy('survey_response.submission_time');
 
-  sqlQuery.logQuery();
-
   return sqlQuery;
 };
 
