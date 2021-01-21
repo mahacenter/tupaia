@@ -12,6 +12,7 @@ export {
   replaceCurrentScreen,
   resetToHome,
   resetToLogin,
+  resetToProjectSelection,
   resetToWelcomeScreen,
   navigateToSurveysMenu,
   navigateToTupaiaWebsite,

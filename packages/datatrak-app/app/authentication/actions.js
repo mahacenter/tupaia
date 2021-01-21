@@ -17,7 +17,7 @@ import {
   LOGOUT,
 } from './constants';
 
-import { resetToHome, resetToLogin, resetToWelcomeScreen } from '../navigation';
+import { resetToProjectSelection, resetToLogin, resetToWelcomeScreen } from '../navigation';
 
 import { getErrorMessage } from '../sync/selectors';
 
@@ -124,7 +124,7 @@ export const receiveLogin = (emailAddress, user, accessPolicy, installId) => asy
 
   crashReporter.setUser(installId, user.name, emailAddress);
 
-  dispatch(resetToHome());
+  dispatch(resetToProjectSelection());
 };
 
 export const receiveUpdatedAccessPolicy = userDetails => (dispatch, getState, { database }) =>

@@ -18,7 +18,9 @@ import {
   SURVEYS_MENU_SCREEN,
   WEB_BROWSER_SCREEN,
   HOME_SCREEN,
+  PROJECT_SELECTION_SCREEN,
 } from './constants';
+
 import { getIsInSurvey } from './selectors';
 import { logout } from '../authentication';
 import { setBaseUrl } from '../web';
@@ -38,6 +40,12 @@ export const resetToHome = () =>
   StackActions.reset({
     index: 0,
     actions: [NavigationActions.navigate({ routeName: HOME_SCREEN })],
+  });
+
+export const resetToProjectSelection = () =>
+  StackActions.reset({
+    index: 0,
+    actions: [NavigationActions.navigate({ routeName: PROJECT_SELECTION_SCREEN })],
   });
 
 export const resetToLogin = () =>

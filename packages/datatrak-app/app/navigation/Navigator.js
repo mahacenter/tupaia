@@ -13,6 +13,7 @@ import { LoginContainer, WelcomeContainer } from '../authentication';
 import { RequestCountryAccessContainer } from '../country';
 import { CreateUserContainer } from '../user';
 import { HomeScreenContainer } from '../home';
+import { ProjectSelectionScreen } from '../projectSelection';
 import { WebBrowserContainer } from '../web';
 import { ChangePasswordContainer } from '../changePassword';
 import { RealmExplorer } from '../database/RealmExplorer';
@@ -28,6 +29,7 @@ import {
   WELCOME_SCREEN,
   WEB_BROWSER_SCREEN,
   HOME_SCREEN,
+  PROJECT_SELECTION_SCREEN,
   CHANGE_PASSWORD_SCREEN,
   ROUTES_WITH_INVISIBLE_HEADERS,
 } from './constants';
@@ -47,6 +49,9 @@ const routes = {
   [CREATE_ACCOUNT_SCREEN]: {
     screen: CreateUserContainer,
     navigationOptions: () => ({ headerRight: () => null }),
+  },
+  [PROJECT_SELECTION_SCREEN]: {
+    screen: ProjectSelectionScreen,
   },
   [HOME_SCREEN]: {
     screen: HomeScreenContainer,
