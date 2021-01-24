@@ -20,6 +20,8 @@ const generateBaseSqlQuery = ({ dataElementCodes, organisationUnitCodes, startDa
     FROM
       analytics
     WHERE
+      latest_for_day = true
+    AND
       data_element_code IN ${SqlQuery.parameteriseArray(dataElementCodes)}
     AND
       entity_code IN ${SqlQuery.parameteriseArray(organisationUnitCodes)}
