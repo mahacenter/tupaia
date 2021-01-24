@@ -37,7 +37,7 @@ const generateBaseSqlQuery = async (
     JOIN
       survey ON survey.id = survey_response.survey_id
     WHERE
-      question_id IN ${SqlQuery.parameteriseArray(questionIds)}
+      question.id IN ${SqlQuery.parameteriseArray(questionIds)}
     AND
       entity.code IN ${SqlQuery.parameteriseArrayAsValues(organisationUnitCodes)}
   `,
