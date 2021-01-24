@@ -25,6 +25,7 @@ exports.up = async function (db) {
       data_element_code: { type: 'text', notNull: true },
       value: { type: 'text', notNull: true },
       date: { type: 'timestamptz', notNull: true },
+      latest_for_day: { type: 'boolean', default: false },
     },
   });
 
@@ -61,10 +62,9 @@ exports.up = async function (db) {
         JOIN
           survey ON survey.id = survey_response.survey_id
     )
-    INSERT INTO analytics (id, survey_response_id, type, entity_name, entity_code, data_element_code, value, date)
-    SELECT id, survey_response_id, type, entity_name, entity_code, data_element_code, value, date
-    FROM analytics_cte
-    WHERE duplicate_number = 1;
+    INSERT INTO analytics (id, survey_response_id, type, entity_name, entity_code, data_element_code, value, date, latest_for_day)
+    SELECT id, survey_response_id, type, entity_name, entity_code, data_element_code, value, date, duplicate_number = 1
+    FROM analytics_cte;
   `);
 
   // best index worked out by trying options and running timing tests, see
