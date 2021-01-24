@@ -17,32 +17,33 @@ exports.setup = function (options, seedLink) {
 exports.up = function (db) {
   return db.runSql(`
     DROP TRIGGER answer_trigger ON answer;
-    WITH answer_duplicates(id, duplicate_number)
-    AS (
-      SELECT
-        answer.id,
-        ROW_NUMBER() OVER (
-          PARTITION BY
-            entity.code,
-            question.code,
-            date_part('year', submission_time),
-                date_part('month', submission_time),
-                date_part('day', submission_time)
-            ORDER BY
-              survey_response.end_time DESC
-        ) AS duplicate_number
-        FROM
-          survey_response
-        JOIN
-          answer ON answer.survey_response_id = survey_response.id
-        JOIN
-          entity ON entity.id = survey_response.entity_id
-        JOIN
-          question ON question.id = answer.question_id
-    )
-    DELETE FROM answer
-    USING answer_duplicates
-    WHERE answer.id = answer_duplicates.id AND duplicate_number > 1;
+     WITH answer_duplicates(id, duplicate_number)
+      AS (
+        SELECT
+          answer.id,
+          ROW_NUMBER() OVER (
+            PARTITION BY
+              entity.code,
+              question.code,
+              date_part('year', submission_time),
+                  date_part('month', submission_time),
+                  date_part('day', submission_time)
+              ORDER BY
+                survey_response.end_time DESC
+          ) AS duplicate_number
+          FROM
+            survey_response
+          JOIN
+            answer ON answer.survey_response_id = survey_response.id
+          JOIN
+            entity ON entity.id = survey_response.entity_id
+          JOIN
+            question ON question.id = answer.question_id
+        )
+      DELETE FROM answer
+      WHERE id NOT IN (
+        SELECT id FROM answer_duplicates WHERE duplicate_number = 1
+      );
   `);
 };
 
