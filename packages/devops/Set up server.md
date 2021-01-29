@@ -26,6 +26,8 @@
 wget https://dl.eff.org/certbot-auto
 chmod a+x certbot-auto
 sudo mv certbot-auto /usr/local/bin/certbot-auto
+sudo chown root:root /usr/local/bin/certbot-auto
+sudo chmod 0755 /usr/local/bin/certbot-auto
 certbot-auto
 ```
 
@@ -133,10 +135,18 @@ sudo service nginx start
 
 ### Install postgresql & postgis
 
+For ubuntu 18
 ```
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt xenial-pgdg main" >> /etc/apt/sources.list'
 wget --quiet -O - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -
 sudo apt install postgresql-10 postgresql-10-postgis-2.4 postgresql-10-postgis-scripts
+```
+
+For ubuntu 20
+```
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt focal-pgdg main" >> /etc/apt/sources.list'
+wget --quiet -O - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -
+sudo apt install postgresql-13 postgresql-13-postgis-3 postgresql-13-postgis-3-scripts
 ```
 
 ### Use postgres user to edit postgres config files
@@ -254,9 +264,9 @@ pm2 install pm2-logrotate
 
 ```
 sudo apt-get install python-pip python-dev build-essential
-pip install --upgrade pip --user
-pip install --upgrade virtualenv --user
-pip install awscli --upgrade --user
+pip3 install --upgrade pip --user
+pip3 install --upgrade virtualenv --user
+pip3 install awscli --upgrade --user
 echo "Leave all fields blank except region, which should be to ap-southeast-2"
 aws configure
 ```
