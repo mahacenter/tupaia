@@ -17,21 +17,11 @@ else
     ENVIRONMENT="dev"
 fi
 
-PACKAGES=("meditrak-server" "web-config-server" "psss-server" "report-server" "web-frontend" "admin-panel" "psss")
+PACKAGES=("meditrak-server" "web-config-server" "web-frontend" "admin-panel")
 # For each package, get the latest and deploy it
 for PACKAGE in ${PACKAGES[@]}; do
     # Set up .env to match the environment variables stored in SSM parameter store
     cd ${HOME_DIRECTORY}/packages/$PACKAGE
-    rm .env
-    echo "Checking out ${ENVIRONMENT} environment variables for ${PACKAGE}"
-    SSM_PATH="/${PACKAGE}/${ENVIRONMENT}"
-    $(aws ssm get-parameters-by-path --with-decryption --path $SSM_PATH |
-        jq -r '.Parameters| .[] | .Name + "=\"" + .Value + "\""  ' |
-        sed -e "s~${SSM_PATH}/~~" >.env)
-
-    # Replace any instances of the placeholder [branch-name] in the .env file with the actual branch
-    # name (e.g. [branch-name]-api.tupaia.org -> specific-branch-api.tupaia.org)
-    sed -i -e "s/\[branch-name\]/${BRANCH}/g" .env
 
     # If it's a server, start it running on pm2, otherwise build it
     echo "Preparing to start or build ${PACKAGE}"

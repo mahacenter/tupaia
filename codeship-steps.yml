@@ -22,12 +22,6 @@
             - name: test-web-config-server
               service: testing
               command: './packages/devops/scripts/ci/testBackend.sh web-config-server'
-            - name: test-psss-server
-              service: testing
-              command: './packages/devops/scripts/ci/testBackend.sh psss-server'
-            - name: test-report-server
-              service: testing
-              command: './packages/devops/scripts/ci/testBackend.sh report-server'
         - type: parallel
           name: test-batch-2
           steps:
@@ -71,10 +65,6 @@
               command: './packages/devops/scripts/ci/deployBackend.sh web-config-server'
             - name: deploy-meditrak-server
               command: './packages/devops/scripts/ci/deployBackend.sh meditrak-server'
-            - name: deploy-psss-server
-              command: './packages/devops/scripts/ci/deployBackend.sh psss-server'
-            - name: deploy-report-server
-              command: './packages/devops/scripts/ci/deployBackend.sh report-server'
         # run migrations immediately after backend deployment has finished so there is minimal time for code/db mismatch
         - name: run db migrations
           command: './packages/devops/scripts/ci/runMigrations.sh'
@@ -86,5 +76,3 @@
           command: './packages/devops/scripts/ci/deployFrontend.sh web-frontend'
         - name: deploy-admin-panel
           command: './packages/devops/scripts/ci/deployFrontend.sh admin-panel'
-        - name: deploy-psss
-          command: './packages/devops/scripts/ci/deployFrontend.sh psss'
