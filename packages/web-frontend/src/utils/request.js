@@ -8,7 +8,8 @@
 import 'whatwg-fetch';
 import downloadJs from 'downloadjs';
 import { showSessionExpiredError, showServerUnreachableError } from '../actions';
-
+import {reactLocalStorage} from 'reactjs-localstorage';
+import data from '../data/data.json'
 /**
  * Returns the HTTP status code off an error response.
  *
@@ -126,10 +127,21 @@ export default async function request(
 ) {
   const baseUrl = process.env.REACT_APP_CONFIG_SERVER_BASE_URL || 'http://localhost:8080/api/v1/';
   try {
-    return await performDeduplicatedRequest(baseUrl + resourceUrl, {
-      ...options,
-      credentials: 'include',
+    console.log(resourceUrl);
+    const localData = reactLocalStorage.getObject('data');
+    if (!localData) {
+        reactLocalStorage.setObject('data', data);
+    }
+    let response = data[resourceUrl] ? data[resourceUrl].data : await performDeduplicatedRequest(baseUrl + resourceUrl, {
+        ...options,
+        credentials: 'include',
     });
+
+      localData[resourceUrl] = {data: response, options};
+      reactLocalStorage.setObject('data', localData);
+      console.log(response)
+      // console.log(localData);
+    return response
   } catch (error) {
     if (shouldRetryOnFail) {
       return request(resourceUrl, errorFunction, options, requestContext, false);
